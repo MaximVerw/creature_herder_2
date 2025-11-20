@@ -1,0 +1,77 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    gradlePluginPortal()
+    mavenLocal()
+    google()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+  }
+  dependencies {
+
+
+  }
+}
+
+plugins {
+  id 'com.diffplug.spotless' version '6.25.0' apply false
+}
+
+allprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'idea'
+
+  // This allows you to "Build and run using IntelliJ IDEA", an option in IDEA's Settings.
+  idea {
+    module {
+      outputDir file('build/classes/java/main')
+      testOutputDir file('build/classes/java/test')
+    }
+  }
+}
+
+configure(subprojects) {
+  apply plugin: 'java-library'
+  apply plugin: 'com.diffplug.spotless'
+
+  sourceCompatibility = 21
+
+  spotless {
+    java {
+      googleJavaFormat('1.17.0')
+      target 'src/**/*.java'
+    }
+  }
+
+  tasks.register('generateAssetList') {
+    inputs.dir("${project.rootDir}/assets/")
+    File assetsFolder = new File("${project.rootDir}/assets/")
+    File assetsFile = new File(assetsFolder, "assets.txt")
+    assetsFile.delete()
+    fileTree(assetsFolder).collect { assetsFolder.relativePath(it) }.sort().each {
+      assetsFile.append(it + "\n")
+    }
+  }
+  processResources.dependsOn 'generateAssetList'
+
+  compileJava {
+    options.incremental = true
+  }
+}
+
+subprojects {
+  version = "$projectVersion"
+  ext.appName = 'Creature_herder_2'
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    // You may want to remove the following line if you have errors downloading dependencies.
+    mavenLocal()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
+  }
+}
+
+eclipse.project.name = 'Creature_herder_2' + '-parent'
