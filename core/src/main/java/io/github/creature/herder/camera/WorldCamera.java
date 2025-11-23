@@ -6,8 +6,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 public class WorldCamera {
+  public static float ZOOM = 200f;
   public static OrthographicCamera camera = new OrthographicCamera();
-  public static Vector2 position = new Vector2();
+  public static Vector2 position = new Vector2(); // position * ZOOM = screenCoord
 
   private WorldCamera() {}
 
@@ -20,8 +21,7 @@ public class WorldCamera {
   }
 
   public static void updateCamera() {
-    camera.position.set(
-        position.x * Gdx.graphics.getWidth(), position.y * Gdx.graphics.getHeight(), 0f);
+    camera.position.set(0f, 0f, 0f);
     camera.direction.set(new Vector3(0f, 0f, -1f)).nor();
     camera.up.set(Vector3.Y);
     camera.update();
@@ -30,18 +30,5 @@ public class WorldCamera {
   public static void resetCamera() {
     position.set(0f, 0f);
     updateCamera();
-  }
-
-  public static Vector2 toScreen(Vector2 worldCoord) {
-    float x = (worldCoord.x + .5f) * Gdx.graphics.getWidth();
-    float y = (worldCoord.y + .5f) * Gdx.graphics.getHeight();
-
-    return new Vector2(x - WorldCamera.position.x, y - WorldCamera.position.y);
-  }
-
-  public static Vector2 toWorld(Vector2 screenCoord) {
-    float x = screenCoord.x + WorldCamera.position.x;
-    float y = screenCoord.y + WorldCamera.position.y;
-    return new Vector2(x / Gdx.graphics.getWidth() - .5f, y / Gdx.graphics.getHeight() - .5f);
   }
 }

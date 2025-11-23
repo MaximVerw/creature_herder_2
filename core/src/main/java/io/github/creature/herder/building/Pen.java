@@ -11,6 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class Pen {
+  public static final int DISPENSER_X_OFFSET = 1;
   Vector2 worldCoord;
   int size;
   List<List<Tile>> penTiles;
@@ -22,7 +23,7 @@ public class Pen {
     this.worldCoord = new Vector2(x, y);
     this.size = size;
     this.creatures = new ArrayList<>();
-    this.dispenser = new FoodDispenser(new ArrayList<>(), x, y);
+    this.dispenser = new FoodDispenser(new ArrayList<>(), x + DISPENSER_X_OFFSET, y);
 
     penTiles = new ArrayList<>();
     for (int i = 0; i < size; i++) {
@@ -33,7 +34,9 @@ public class Pen {
     }
     windows = new ArrayList<>();
     for (int i = 0; i < size; i++) {
-      windows.add(new Window(true, x + i, y));
+      if (i != DISPENSER_X_OFFSET) {
+        windows.add(new Window(true, x + i, y));
+      }
       windows.add(new Window(false, x, y + i));
       windows.add(new Window(true, x + i, y + size));
       windows.add(new Window(false, x + size, y + i));
@@ -63,6 +66,6 @@ public class Pen {
   }
 
   public Vector2 getDispenserPosition() {
-    return new Vector2(worldCoord.x + 1, worldCoord.y);
+    return new Vector2(worldCoord.x + DISPENSER_X_OFFSET, worldCoord.y);
   }
 }

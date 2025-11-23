@@ -4,43 +4,45 @@ import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.player.Direction;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class EntityState {
-  Vector2 targetScreenCoord;
+  Vector2 targetWorldCoord;
   State state;
   Direction direction;
 
+  // in worldCoord
   static List<Vector2> directionVectors = setupDirectionVectors();
 
   EntityState() {
-    targetScreenCoord = new Vector2(0, 0);
+    targetWorldCoord = new Vector2(0, 0);
     state = State.IDLE;
     direction = Direction.North;
   }
 
   private static List<Vector2> setupDirectionVectors() {
     List<Vector2> result = new ArrayList<>();
-    result.add(new Vector2(0, 1).nor());
     result.add(new Vector2(1, 1).nor());
-    result.add(new Vector2(1, 0).nor());
-    result.add(new Vector2(1, -1).nor());
-    result.add(new Vector2(0, -1).nor());
-    result.add(new Vector2(-1, -1).nor());
-    result.add(new Vector2(-1, 0).nor());
+    result.add(new Vector2(0, 1).nor());
     result.add(new Vector2(-1, 1).nor());
+    result.add(new Vector2(-1, 0).nor());
+    result.add(new Vector2(-1, -1).nor());
+    result.add(new Vector2(0, -1).nor());
+    result.add(new Vector2(1, -1).nor());
+    result.add(new Vector2(1, 0).nor());
     return result;
   }
 
-  public void walkTowardsScreenCoord(final Vector2 target, final Vector2 currentPosition) {
-    targetScreenCoord = target;
+  public void walkTowardsWorldCoord(final Vector2 target, final Vector2 currentPosition) {
+    targetWorldCoord = target;
     state = State.WALKING;
-    direction =
-        determineDirectionScreenDelta(target.x - currentPosition.x, target.y - currentPosition.y);
+    Vector2 delta = target.cpy().sub(currentPosition);
+    if (delta.x != 0 || delta.y != 0) {
+      direction = determineDirectionWorldDelta(delta.x, delta.y);
+    }
   }
 
   public void idle() {
@@ -55,13 +57,11 @@ public class EntityState {
     state = State.PICKED_UP;
   }
 
-  public static Direction determineDirectionScreenDelta(final float deltaX, final float deltaY) {
-    final Vector2 vector2 = new Vector2(deltaX, deltaY * 2f).nor();
+  public static Direction determineDirectionWorldDelta(final float deltaX, final float deltaY) {
+    final Vector2 vector2 = new Vector2(deltaX, deltaY).nor();
 
     final List<Float> distances =
-        directionVectors.stream()
-            .map(directionVector -> directionVector.dst2(vector2))
-            .collect(Collectors.toList());
+        directionVectors.stream().map(directionVector -> directionVector.dst2(vector2)).toList();
 
     int minDistanceIndex = 0;
     float minDistance = distances.getFirst();

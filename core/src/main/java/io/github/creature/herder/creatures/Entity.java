@@ -22,25 +22,22 @@ public abstract class Entity {
     state = new EntityState();
     renderable =
         new Renderable(
-            getRegion(state),
-            new Vector2(),
-            new Vector2(SPRITE_WIDTH * 2f / 3f, 1f),
-            new Vector2(.5f, 0f), 3f);
+            getRegion(state), new Vector2(), new Vector2(1f / 3f, .5f), new Vector2(.5f, 0f), 3f);
     speed = 2f;
   }
 
   public Renderable getRenderable() {
-    renderable.sprite.setRegion(getRegion(state));
+    renderable.sprite = getRegion(state);
     return renderable;
   }
 
   protected TextureRegion getRegion(final EntityState state) {
-    return (new TextureRegion(
+    return new TextureRegion(
         texture,
         state.getDirection().ordinal() * SPRITE_WIDTH,
         SPRITE_HEIGHT * getAnimationOffset(state),
         SPRITE_WIDTH,
-        SPRITE_HEIGHT));
+        SPRITE_HEIGHT);
   }
 
   protected int getAnimationOffset(final EntityState entityState) {

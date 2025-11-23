@@ -3,6 +3,7 @@ package io.github.creature.herder.screen;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import io.github.creature.herder.building.Building;
 import io.github.creature.herder.camera.WorldCamera;
@@ -18,9 +19,9 @@ import java.util.Random;
 
 public class BuildingScreen implements Screen {
   public static Random RANDOM = new Random();
-  Building building;
-  Player player;
-  List<Creature> creatures;
+  public static Player player = new Player();
+  public static List<Creature> creatures = new ArrayList<>();
+  public static Building building = new Building();
   SpriteBatch spriteBatch;
 
   @Override
@@ -28,15 +29,12 @@ public class BuildingScreen implements Screen {
     WorldCamera.resetCamera();
     spriteBatch = new SpriteBatch();
 
-    building = new Building();
-    player = new Player();
-    creatures = new ArrayList<>();
     building
         .getPens()
         .forEach(
             pen -> {
               for (int i = 0; i < 5; i++) {
-                final Rat rat = new Rat(pen, 1f + RANDOM.nextFloat() * 1.5f - .3f, 1f);
+                final Rat rat = new Rat(pen, .5f + RANDOM.nextFloat() * .6f - .3f, 1f);
                 creatures.add(rat);
               }
             });
@@ -54,30 +52,34 @@ public class BuildingScreen implements Screen {
     creatures.forEach(creature -> creature.update(delta, player));
 
     // player
-    player.getState().idle();
+    player.update(delta, player);
 
     drawSprites();
   }
 
   private void drawSprites() {
-    // building
     final List<Renderable> renderables = new ArrayList<>(building.getRenderables());
     creatures.forEach(creature -> renderables.add(creature.getRenderable()));
     renderables.add(player.getRenderable());
 
     spriteBatch.setProjectionMatrix(WorldCamera.camera.combined);
     spriteBatch.begin();
-    renderables.stream().sorted(Comparator.comparingDouble(x ->x.priority)).forEach(r -> drawRenderable(r, spriteBatch));
+    renderables.stream()
+        .sorted(Comparator.comparingDouble(x -> ((Renderable)x).priority).thenComparingDouble(x -> -((Renderable)x).getScreenCoord().y))
+        .forEach(r -> drawRenderable(r, spriteBatch));
     spriteBatch.end();
   }
 
   private void drawRenderable(Renderable renderable, SpriteBatch spriteBatch) {
+    float width = renderable.getScreenWidth();
+    float height = renderable.getScreenHeight();
+    Vector2 position = renderable.getScreenCoord();
     spriteBatch.draw(
-        renderable.sprite.getTexture(),
-        (renderable.sprite.isFlipX()?renderable.sprite.getWidth():0) + renderable.sprite.getX() - renderable.sprite.getWidth() * renderable.anchor.x,
-        renderable.sprite.getY() - renderable.sprite.getHeight() * renderable.anchor.y,
-        (renderable.sprite.isFlipX()?-1:1)*renderable.sprite.getWidth(),
-        renderable.sprite.getHeight());
+        renderable.sprite,
+        (renderable.flipX ? width : 0) + position.x - width * renderable.anchor.x,
+        position.y - height * renderable.anchor.y,
+        (renderable.flipX ? -1 : 1) * width,
+        height);
   }
 
   @Override

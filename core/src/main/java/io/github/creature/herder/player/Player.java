@@ -1,10 +1,13 @@
 package io.github.creature.herder.player;
 
-import com.badlogic.gdx.math.Vector2;
+import static io.github.creature.herder.camera.WorldCamera.ZOOM;
+
 import com.badlogic.gdx.utils.TimeUtils;
 import io.github.creature.herder.camera.WorldCamera;
+import io.github.creature.herder.creatures.Creature;
 import io.github.creature.herder.creatures.Entity;
 import io.github.creature.herder.creatures.EntityState;
+import io.github.creature.herder.input.InputHelper;
 import io.github.creature.herder.util.CoordUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +15,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Player extends Entity {
-  static float PLAYER_OFFSET_Y = 2f;
+  static float PLAYER_OFFSET_Y = -1f;
+  public Creature pickedUpCreature;
 
   @Override
   protected String getTextureFileName() {
@@ -21,9 +25,34 @@ public class Player extends Entity {
 
   @Override
   public void update(final float delta, final Player player) {
-    Vector2 screenCoord =
-        CoordUtil.WorldToScreen(WorldCamera.position.cpy().sub(0f, PLAYER_OFFSET_Y));
-    player.renderable.sprite.setPosition(screenCoord.x, screenCoord.y);
+    float deltaX = 0f;
+    float deltaY = 0f;
+    if (InputHelper.isWalkingRight()) {
+      deltaX -= 1f;
+      deltaY += 1f;
+    }
+    if (InputHelper.isWalkingLeft()) {
+      deltaX += 1f;
+      deltaY -= 1f;
+    }
+    if (InputHelper.isWalkingUp()) {
+      deltaX += 1f;
+      deltaY += 1f;
+    }
+    if (InputHelper.isWalkingDown()) {
+      deltaX -= 1f;
+      deltaY -= 1f;
+    }
+    if (deltaX != 0f || deltaY != 0f) {
+      state.setDirection(EntityState.determineDirectionWorldDelta(deltaX, deltaY));
+      state.setState(EntityState.State.WALKING);
+    } else {
+      state.idle();
+    }
+
+    this.renderable.woordCoord =
+        CoordUtil.ScreenToWorld(WorldCamera.position.cpy().scl(ZOOM))
+            .add(PLAYER_OFFSET_Y, PLAYER_OFFSET_Y);
   }
 
   @Override

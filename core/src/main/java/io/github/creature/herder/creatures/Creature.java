@@ -7,7 +7,6 @@ import io.github.creature.herder.building.Pen;
 import io.github.creature.herder.food.DigestionTrack;
 import io.github.creature.herder.food.Food;
 import io.github.creature.herder.player.Player;
-import io.github.creature.herder.util.CoordUtil;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,10 +26,9 @@ public abstract class Creature extends Entity {
     super();
     this.pen = pen;
     pen.getCreatures().add(this);
-    this.renderable.sprite.setSize(size, size);
-    Vector2 screenCoord = CoordUtil.WorldToScreen(pen.getWorldCoord());
-    this.renderable.sprite.setPosition(screenCoord.x, screenCoord.y);
     this.size = Math.clamp(size, .7f, 1.5f);
+    this.renderable.size = new Vector2(this.size, this.size);
+    this.renderable.woordCoord = pen.getWorldCoord().cpy();
     this.speed = this.getSpeed() / this.speed;
     this.stomach = new Stomach(size, digestionSpeed, digestionTracks);
     this.health = 10;
@@ -57,30 +55,26 @@ public abstract class Creature extends Entity {
       }
     } else if (state.getState().equals(EntityState.State.WALKING)) {
       final Vector2 creatureWorldCoord = renderable.getWorldCoord();
-      if (creatureWorldCoord.dst2(CoordUtil.ScreenToWorld(state.getTargetScreenCoord())) < .001f) {
-        if (creatureWorldCoord.dst2(pen.getDispenserPosition()) < .0011f) {
+      if (creatureWorldCoord.dst2(state.getTargetWorldCoord()) < .1f) {
+        if (creatureWorldCoord.dst2(pen.getDispenserPosition()) < .11f) {
           this.stomach.takeFood(this.pen.getDispenser());
-          walkToRandomTile();
-        } else {
-          state.idle();
         }
+        state.idle();
       } else {
-        final Vector2 deltaScreen =
-            state.getTargetScreenCoord().cpy().sub(renderable.getScreenCoord());
-        Vector2 clampedDelta = deltaScreen.scl(1f, 2f).nor().scl(delta * speed).scl(1f, .5f);
-        renderable.sprite.translate(clampedDelta.x, clampedDelta.y);
+        final Vector2 deltaWorld =
+            state.getTargetWorldCoord().cpy().sub(renderable.getWorldCoord());
+        Vector2 clampedDelta = deltaWorld.nor().scl(delta * speed);
+        renderable.woordCoord = renderable.getWorldCoord().add(clampedDelta);
       }
     } else if (state.getState().equals(EntityState.State.PICKED_UP)) {
       state.setDirection(player.getState().getDirection());
-      final float offset = player.getRenderable().sprite.getHeight() / 2f;
+      final float offset = .5f;
       final Vector2 offsetVector =
-          EntityState.directionVectors.get(player.getState().getDirection().ordinal());
-      Vector2 newPosition =
-          player.getRenderable().getScreenCoord().cpy().add(offsetVector.scl(offset, offset / 2f));
-      renderable.sprite.setPosition(newPosition.x, newPosition.y);
+          EntityState.directionVectors.get(player.getState().getDirection().ordinal()).cpy();
+      renderable.woordCoord =
+          player.getRenderable().getWorldCoord().cpy().add(offsetVector.scl(offset, offset));
     } else if (state.getState().equals(EntityState.State.DEAD)) {
-      renderable.sprite.setSize(
-          renderable.sprite.getWidth() * .95f, renderable.sprite.getHeight() * .95f);
+      renderable.size = renderable.size.scl(.95f);
     }
     checkHealth();
   }
@@ -90,13 +84,10 @@ public abstract class Creature extends Entity {
         Math.abs(RANDOM.nextInt()) % (pen.getSize() - 2) + 1 + pen.getWorldCoord().x;
     final float tileJ =
         Math.abs(RANDOM.nextInt()) % (pen.getSize() - 2) + 1 + pen.getWorldCoord().y;
-    final Vector2 screenCoord = CoordUtil.WorldToScreen(new Vector2(tileI, tileJ));
-
-    state.walkTowardsScreenCoord(
+    state.walkTowardsWorldCoord(
         new Vector2(
-            screenCoord.x + RANDOM.nextFloat() * 1.5f - .75f,
-            screenCoord.y + RANDOM.nextFloat() * .76f - .38f),
-        renderable.getScreenCoord());
+            tileI + .5f * (RANDOM.nextFloat() - .5f), tileJ + .5f * (RANDOM.nextFloat() - .5f)),
+        renderable.getWorldCoord());
   }
 
   private void goGetFood() {
@@ -104,13 +95,12 @@ public abstract class Creature extends Entity {
         && !this.pen.getDispenser().getFoods().isEmpty()
         && !this.stomach.isFull()) {
       final Vector2 dispenserPositionWorldCoord = pen.getDispenserPosition();
-      this.state.walkTowardsScreenCoord(
-          CoordUtil.WorldToScreen(dispenserPositionWorldCoord), renderable.getScreenCoord());
+      this.state.walkTowardsWorldCoord(dispenserPositionWorldCoord, renderable.getWorldCoord());
     }
   }
 
   public boolean removeMe() {
-    return state.getState().equals(EntityState.State.DEAD) && (renderable.sprite.getWidth() < .1f);
+    return state.getState().equals(EntityState.State.DEAD) && (renderable.size.x < .1f);
   }
 
   private void checkHealth() {
