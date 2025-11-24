@@ -3,9 +3,11 @@ package io.github.creature.herder.building;
 import static io.github.creature.herder.building.TileType.Background;
 
 import com.badlogic.gdx.math.Vector2;
+import io.github.creature.herder.food.Food;
 import io.github.creature.herder.render.Renderable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -15,6 +17,7 @@ public class Building {
   public static final int FLOOR_SIZE = 20;
   List<List<Tile>> floorTiles;
   List<Pen> pens;
+  List<Store> stores;
 
   public Building() {
     floorTiles = new ArrayList<>();
@@ -28,6 +31,10 @@ public class Building {
     pens.add(new Pen(5, 4, 4));
     pens.add(new Pen(5, 12, 4));
     pens.add(new Pen(6, 4, 12));
+
+    stores = new ArrayList<>();
+    stores.add(new Store(Map.of(Food.STONE, 1.), 2, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .5, Food.STONE, .2), 4, 0, false));
   }
 
   public boolean isWalkable(final int i, final int j) {
@@ -45,6 +52,9 @@ public class Building {
     for (final Pen pen : pens) {
       renderables.addAll(pen.getRenderables());
     }
+    for (final Store store : stores) {
+      renderables.addAll(store.getRenderables());
+    }
     return renderables;
   }
 
@@ -53,8 +63,7 @@ public class Building {
   }
 
   public Optional<FoodDispenser> isDispenser(Vector2 worldCoord) {
-    return pens.stream()
-        .flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump()))
+    return Stream.concat(stores.stream(), pens.stream().flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump())))
         .filter(foodDispenser -> foodDispenser.getRenderable().woordCoord.dst(worldCoord) < 1f)
         .findAny();
   }

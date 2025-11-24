@@ -17,7 +17,7 @@ public class FoodDispenser extends RenderableObject {
   List<Vector2> foodWorldCoords;
   boolean flipped;
 
-  public FoodDispenser(final List<Food> foods, final int x, final int y, final boolean flipped) {
+  public FoodDispenser(final int x, final int y, final boolean flipped) {
     final Texture texture = new Texture("foodDispenser.png");
     renderable =
         new Renderable(
@@ -29,7 +29,7 @@ public class FoodDispenser extends RenderableObject {
             flipped,
             3f);
     this.flipped = flipped;
-    this.foods = foods;
+    this.foods = new ArrayList<>();
     foodWorldCoords = createFoodDisplayPositions();
     this.maxFood = FOODS_PER_DISPLAY_SLOT * foodWorldCoords.size();
   }

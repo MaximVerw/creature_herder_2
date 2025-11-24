@@ -74,6 +74,7 @@ public class InputHelper {
                   pickable.add(pen.getDispenser());
                   pickable.add(pen.getDump());
                 });
+          pickable.addAll(building.getStores());
         Optional<ClosestObjectWithDistance> closestRenderableObject =
             getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
         closestRenderableObject.ifPresent(InputHelper::pickUpObject);
@@ -134,6 +135,7 @@ public class InputHelper {
     if (player.pickedUpObject != null || closestObjectWithDistance.distance() > 1f) {
       return;
     }
+
     if (closestObjectWithDistance.object() instanceof Creature creature) {
       if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
         creature.pickUp();
@@ -145,8 +147,6 @@ public class InputHelper {
         player.pickedUpObject = newBag;
         items.add(newBag);
       }
-    } else {
-      int n = 0;
     }
   }
 
