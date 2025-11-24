@@ -1,19 +1,23 @@
 package io.github.creature.herder.input;
 
 import static io.github.creature.herder.screen.BuildingScreen.*;
-import static java.lang.System.exit;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
+import io.github.creature.herder.building.FoodDispenser;
 import io.github.creature.herder.building.Pen;
 import io.github.creature.herder.camera.WorldCamera;
-import io.github.creature.herder.creatures.ClosestCreatureWithDistance;
+import io.github.creature.herder.creatures.ClosestObjectWithDistance;
 import io.github.creature.herder.creatures.Creature;
 import io.github.creature.herder.creatures.EntityState;
+import io.github.creature.herder.items.FoodBag;
+import io.github.creature.herder.render.RenderableObject;
 import io.github.creature.herder.util.CoordUtil;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public class InputHelper {
@@ -22,8 +26,7 @@ public class InputHelper {
 
   public static void processInputs(final float delta) {
     if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-      Gdx.app.exit();
-      exit(0);
+      throw new RuntimeException();
     }
     if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
       if (Gdx.graphics.isFullscreen()) {
@@ -62,49 +65,89 @@ public class InputHelper {
     }
 
     if (Gdx.input.isKeyPressed(Input.Keys.O)) {
-      if (player.getPickedUpCreature() == null) {
-        pickUpClosestCreature();
+      if (player.getPickedUpObject() == null) {
+        List<RenderableObject> pickable = new ArrayList<>(creatures);
+        building
+            .getPens()
+            .forEach(
+                pen -> {
+                  pickable.add(pen.getDispenser());
+                  pickable.add(pen.getDump());
+                });
+        Optional<ClosestObjectWithDistance> closestRenderableObject =
+            getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
+        closestRenderableObject.ifPresent(InputHelper::pickUpObject);
       }
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.P) && player.getPickedUpCreature() != null) {
-      if (player.getPickedUpCreature().getState().getState().equals(EntityState.State.PICKED_UP)) {
-        dropPickedUpCreature();
+    if (Gdx.input.isKeyPressed(Input.Keys.P) && player.getPickedUpObject() != null) {
+      if (player.getPickedUpObject() instanceof Creature creature) {
+        sanityCheckPickedUpCreature(creature);
+        dropPickedUpCreature(creature);
+      } else if (player.getPickedUpObject() instanceof FoodBag foodBag) {
+        dropFoodBag(foodBag);
       }
     }
   }
 
-  private static void dropPickedUpCreature() {
-    final Vector2 pickedUpCreatureWorldCoord =
-        player.getPickedUpCreature().getRenderable().getWorldCoord();
-    final Optional<Pen> pen =
-        building.isPen(
-            Math.round(pickedUpCreatureWorldCoord.x), Math.round(pickedUpCreatureWorldCoord.y));
-    pen.ifPresent(value -> {
-        player.getPickedUpCreature().putInPen(value);
-        player.pickedUpCreature = null;
-    });
-  }
-
-  private static void pickUpClosestCreature() {
-    final Optional<ClosestCreatureWithDistance> closestCreatureOpt =
-        getClosestCreature(player.getRenderable().getWorldCoord().cpy());
-    closestCreatureOpt.ifPresent(
-        closestCreature -> {
-          if (Creature.IDLE_STATES.contains(closestCreature.closestCreature().getState().getState())
-              && closestCreature.distance() < 1f) {
-            closestCreature.closestCreature().pickUp();
-            player.pickedUpCreature = closestCreature.closestCreature();
+  private static void dropFoodBag(FoodBag foodBag) {
+    Optional<FoodDispenser> dispenser =
+        building.isDispenser(foodBag.getRenderable().getWorldCoord());
+    dispenser.ifPresent(
+        dp -> {
+          while (!foodBag.foods.isEmpty() && dp.addFood(foodBag.foods.getLast())) {
+            foodBag.foods.removeLast();
+          }
+          if (foodBag.foods.isEmpty()) {
+            items.remove(foodBag);
+            player.pickedUpObject = null;
           }
         });
   }
 
-  private static Optional<ClosestCreatureWithDistance> getClosestCreature(Vector2 worldCoord) {
-    return creatures.stream()
+  private static void dropPickedUpCreature(Creature creature) {
+    final Vector2 pickedUpCreatureWorldCoord =
+        player.getPickedUpObject().getRenderable().getWorldCoord();
+    final Optional<Pen> pen =
+        building.isPen(
+            Math.round(pickedUpCreatureWorldCoord.x), Math.round(pickedUpCreatureWorldCoord.y));
+    pen.ifPresent(
+        value -> {
+          creature.putInPen(value);
+          player.pickedUpObject = null;
+        });
+  }
+
+  private static Optional<ClosestObjectWithDistance> getClosestRenderableObject(
+      List<RenderableObject> renderables, Vector2 worldCoord) {
+    if (renderables.isEmpty()) {
+      return Optional.empty();
+    }
+    return renderables.stream()
         .min(Comparator.comparingDouble(c -> c.getRenderable().getWorldCoord().dst(worldCoord)))
         .map(
             c ->
-                new ClosestCreatureWithDistance(
+                new ClosestObjectWithDistance(
                     c, c.getRenderable().getWorldCoord().dst(worldCoord)));
+  }
+
+  private static void pickUpObject(ClosestObjectWithDistance closestObjectWithDistance) {
+    if (player.pickedUpObject != null || closestObjectWithDistance.distance() > 1f) {
+      return;
+    }
+    if (closestObjectWithDistance.object() instanceof Creature creature) {
+      if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
+        creature.pickUp();
+        player.pickedUpObject = creature;
+      }
+    } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
+      if (!dispenser.getFoods().isEmpty()) {
+        FoodBag newBag = new FoodBag(dispenser.getFoods());
+        player.pickedUpObject = newBag;
+        items.add(newBag);
+      }
+    } else {
+      int n = 0;
+    }
   }
 
   public static boolean isWalkingDown() {
@@ -121,5 +164,11 @@ public class InputHelper {
 
   public static boolean isWalkingRight() {
     return Gdx.input.isKeyPressed(Input.Keys.RIGHT);
+  }
+
+  private static void sanityCheckPickedUpCreature(Creature creature) {
+    if (!creature.getState().getState().equals(EntityState.State.PICKED_UP)) {
+      throw new RuntimeException();
+    }
   }
 }

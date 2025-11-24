@@ -4,16 +4,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
-import io.github.creature.herder.player.Player;
 import io.github.creature.herder.render.Renderable;
+import io.github.creature.herder.render.RenderableObject;
 import lombok.Getter;
 
 @Getter
-public abstract class Entity {
+public abstract class Entity extends RenderableObject {
   public static final int SPRITE_WIDTH = 16;
   public static final int SPRITE_HEIGHT = 24;
   protected Texture texture;
-  protected Renderable renderable;
   protected EntityState state;
   float speed;
 
@@ -26,6 +25,7 @@ public abstract class Entity {
     speed = 2f;
   }
 
+  @Override
   public Renderable getRenderable() {
     renderable.sprite = getRegion(state);
     return renderable;
@@ -56,5 +56,5 @@ public abstract class Entity {
 
   protected abstract String getTextureFileName();
 
-  public abstract void update(float delta, Player player);
+  public abstract void update(float delta);
 }

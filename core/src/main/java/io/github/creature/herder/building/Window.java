@@ -3,12 +3,12 @@ package io.github.creature.herder.building;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.render.Renderable;
+import io.github.creature.herder.render.RenderableObject;
 import lombok.Getter;
 
 @Getter
-public class Window {
+public class Window extends RenderableObject {
   boolean facingLeft;
-  Renderable renderable;
 
   Window(final boolean facingLeft, final int x, final int y) {
     final Texture texture = new Texture("window.png");

@@ -10,6 +10,7 @@ import io.github.creature.herder.camera.WorldCamera;
 import io.github.creature.herder.creatures.Creature;
 import io.github.creature.herder.creatures.Rat;
 import io.github.creature.herder.input.InputHelper;
+import io.github.creature.herder.items.FoodBag;
 import io.github.creature.herder.player.Player;
 import io.github.creature.herder.render.Renderable;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class BuildingScreen implements Screen {
   public static Random RANDOM = new Random();
   public static Player player = new Player();
   public static List<Creature> creatures = new ArrayList<>();
+  public static List<FoodBag> items = new ArrayList<>();
   public static Building building = new Building();
   SpriteBatch spriteBatch;
 
@@ -49,10 +51,13 @@ public class BuildingScreen implements Screen {
 
     // creatures
     creatures.removeAll(creatures.stream().filter(Creature::removeMe).toList());
-    creatures.forEach(creature -> creature.update(delta, player));
+    creatures.forEach(creature -> creature.update(delta));
+
+    // items
+    items.forEach(item -> item.update(delta));
 
     // player
-    player.update(delta, player);
+    player.update(delta);
 
     drawSprites();
   }
@@ -60,12 +65,15 @@ public class BuildingScreen implements Screen {
   private void drawSprites() {
     final List<Renderable> renderables = new ArrayList<>(building.getRenderables());
     creatures.forEach(creature -> renderables.add(creature.getRenderable()));
+    items.forEach(item -> renderables.add(item.getRenderable()));
     renderables.add(player.getRenderable());
 
     spriteBatch.setProjectionMatrix(WorldCamera.camera.combined);
     spriteBatch.begin();
     renderables.stream()
-        .sorted(Comparator.comparingDouble(x -> ((Renderable)x).priority).thenComparingDouble(x -> -((Renderable)x).getScreenCoord().y))
+        .sorted(
+            Comparator.comparingDouble(x -> ((Renderable) x).priority)
+                .thenComparingDouble(x -> -((Renderable) x).getScreenCoord().y))
         .forEach(r -> drawRenderable(r, spriteBatch));
     spriteBatch.end();
   }

@@ -15,7 +15,7 @@ public class EntityState {
   Direction direction;
 
   // in worldCoord
-  static List<Vector2> directionVectors = setupDirectionVectors();
+  public static List<Vector2> directionVectors = setupDirectionVectors();
 
   EntityState() {
     targetWorldCoord = new Vector2(0, 0);

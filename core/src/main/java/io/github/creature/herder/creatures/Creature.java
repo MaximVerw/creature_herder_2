@@ -1,12 +1,13 @@
 package io.github.creature.herder.creatures;
 
+import static io.github.creature.herder.player.Player.computePickedUpWorldCoord;
+import static io.github.creature.herder.screen.BuildingScreen.player;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.building.Pen;
 import io.github.creature.herder.food.DigestionTrack;
 import io.github.creature.herder.food.Food;
-import io.github.creature.herder.player.Player;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,20 +36,8 @@ public abstract class Creature extends Entity {
   }
 
   @Override
-  public void update(final float delta, final Player player) {
-    if (!state.getState().equals(EntityState.State.DEAD) && stomach.foodCheck()) {
-      if (!stomach.canEat()) {
-        takeDamage();
-        goGetFood();
-      } else {
-        final Optional<Food> poop = stomach.processFood(this);
-
-        if (!stomach.canEat()) {
-          goGetFood();
-        }
-        // TODO do something with poop
-      }
-    }
+  public void update(final float delta) {
+    processFood();
     if (state.getState().equals(EntityState.State.IDLE)) {
       if (pen != null && RANDOM.nextFloat() < 0.01f) {
         walkToRandomTile();
@@ -68,15 +57,26 @@ public abstract class Creature extends Entity {
       }
     } else if (state.getState().equals(EntityState.State.PICKED_UP)) {
       state.setDirection(player.getState().getDirection());
-      final float offset = .5f;
-      final Vector2 offsetVector =
-          EntityState.directionVectors.get(player.getState().getDirection().ordinal()).cpy();
-      renderable.woordCoord =
-          player.getRenderable().getWorldCoord().cpy().add(offsetVector.scl(offset, offset));
+      renderable.woordCoord = computePickedUpWorldCoord();
     } else if (state.getState().equals(EntityState.State.DEAD)) {
       renderable.size = renderable.size.scl(.95f);
     }
     checkHealth();
+  }
+
+  private void processFood() {
+    if (!state.getState().equals(EntityState.State.DEAD) && pen != null && stomach.foodCheck()) {
+      if (!stomach.canEat()) {
+        takeDamage();
+        goGetFood();
+      } else {
+        final Optional<Food> poopOpt = stomach.processFood(this);
+        poopOpt.ifPresent(poop -> pen.getDump().addFood(poop));
+        if (!stomach.canEat()) {
+          goGetFood();
+        }
+      }
+    }
   }
 
   private void walkToRandomTile() {

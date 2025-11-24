@@ -2,10 +2,12 @@ package io.github.creature.herder.building;
 
 import static io.github.creature.herder.building.TileType.Background;
 
+import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.render.Renderable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.Getter;
 
 @Getter
@@ -33,10 +35,6 @@ public class Building {
         && !(i < 0 || j < 0 || i >= FLOOR_SIZE || j >= FLOOR_SIZE);
   }
 
-  public Optional<Pen> isPen(final int i, final int j) {
-    return pens.stream().filter(pen -> pen.isInside(i, j)).findAny();
-  }
-
   public List<Renderable> getRenderables() {
     final List<Renderable> renderables = new ArrayList<>();
     for (final List<Tile> tileList : floorTiles) {
@@ -48,5 +46,16 @@ public class Building {
       renderables.addAll(pen.getRenderables());
     }
     return renderables;
+  }
+
+  public Optional<Pen> isPen(final int i, final int j) {
+    return pens.stream().filter(pen -> pen.isInside(i, j)).findAny();
+  }
+
+  public Optional<FoodDispenser> isDispenser(Vector2 worldCoord) {
+    return pens.stream()
+        .flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump()))
+        .filter(foodDispenser -> foodDispenser.getRenderable().woordCoord.dst(worldCoord) < 1f)
+        .findAny();
   }
 }

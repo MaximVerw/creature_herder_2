@@ -28,7 +28,7 @@ public class Stomach {
   }
 
   public boolean foodCheck() {
-    return RANDOM.nextFloat() < (.001f * digestionSpeed);
+    return RANDOM.nextFloat() < (.005f * digestionSpeed);
   }
 
   public Optional<Food> processFood(final Creature creature) {

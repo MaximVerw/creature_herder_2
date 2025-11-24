@@ -4,14 +4,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.render.Renderable;
+import io.github.creature.herder.render.RenderableObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class Tile {
+public class Tile extends RenderableObject {
   TileType type;
-  Renderable renderable;
 
   public Tile(final TileType type, final int x, final int y) {
     final Sprite sprite = new Sprite(new Texture(getPathForType(type)));
