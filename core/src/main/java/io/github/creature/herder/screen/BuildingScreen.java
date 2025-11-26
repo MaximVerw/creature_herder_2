@@ -51,7 +51,7 @@ public class BuildingScreen implements Screen {
 
     // creatures
     creatures.removeAll(creatures.stream().filter(Creature::removeMe).toList());
-    creatures.forEach(creature -> creature.update(delta));
+    new ArrayList<>(creatures).forEach(creature -> creature.update(delta));
 
     // items
     items.forEach(item -> item.update(delta));
@@ -75,6 +75,7 @@ public class BuildingScreen implements Screen {
             Comparator.comparingDouble(x -> ((Renderable) x).priority)
                 .thenComparingDouble(x -> -((Renderable) x).getScreenCoord().y))
         .forEach(r -> drawRenderable(r, spriteBatch));
+    UIHelper.drawUIElements(spriteBatch);
     spriteBatch.end();
   }
 

@@ -19,8 +19,9 @@ import lombok.Setter;
 public class Player extends Entity {
   static float PLAYER_OFFSET = -1f;
   public RenderableObject pickedUpObject;
+    private int money = 100;
 
-  @Override
+    @Override
   protected String getTextureFileName() {
     return "player_spread.png";
   }

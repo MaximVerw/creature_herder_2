@@ -23,4 +23,9 @@ public class Rat extends Creature {
   protected int getAnimationOffset(final EntityState entityState) {
     return 0;
   }
+
+    @Override
+    CreatureType getType() {
+        return CreatureType.RAT;
+    }
 }

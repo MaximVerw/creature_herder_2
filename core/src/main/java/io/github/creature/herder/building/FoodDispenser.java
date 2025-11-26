@@ -3,11 +3,14 @@ package io.github.creature.herder.building;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.food.Food;
+import io.github.creature.herder.items.FoodBag;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+
+import static io.github.creature.herder.screen.BuildingScreen.player;
 
 @Getter
 public class FoodDispenser extends RenderableObject {
@@ -16,6 +19,7 @@ public class FoodDispenser extends RenderableObject {
   List<Food> foods;
   List<Vector2> foodWorldCoords;
   boolean flipped;
+  int price;
 
   public FoodDispenser(final int x, final int y, final boolean flipped) {
     final Texture texture = new Texture("foodDispenser.png");
@@ -32,6 +36,7 @@ public class FoodDispenser extends RenderableObject {
     this.foods = new ArrayList<>();
     foodWorldCoords = createFoodDisplayPositions();
     this.maxFood = FOODS_PER_DISPLAY_SLOT * foodWorldCoords.size();
+    this.price = 0;
   }
 
   public List<Renderable> getRenderables() {
@@ -80,4 +85,8 @@ public class FoodDispenser extends RenderableObject {
     }
     return false;
   }
+
+    public FoodBag pickUp() {
+        return new FoodBag(this);
+    }
 }

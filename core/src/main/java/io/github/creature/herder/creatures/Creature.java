@@ -1,6 +1,7 @@
 package io.github.creature.herder.creatures;
 
 import static io.github.creature.herder.player.Player.computePickedUpWorldCoord;
+import static io.github.creature.herder.screen.BuildingScreen.creatures;
 import static io.github.creature.herder.screen.BuildingScreen.player;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
@@ -75,11 +76,26 @@ public abstract class Creature extends Entity {
         if (!stomach.canEat()) {
           goGetFood();
         }
+        reproduce();
       }
     }
   }
 
-  private void walkToRandomTile() {
+    private void reproduce() {
+      if (RANDOM.nextFloat()<0.01f){
+          Creature child = createCreature(getType(), pen, size, stomach.digestionSpeed);
+          child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
+          creatures.add(child);
+      }
+    }
+
+    public static Creature createCreature(CreatureType type, Pen pen, float size, float digestionSpeed) {
+        return switch (type) {
+            case RAT -> new Rat(pen, size, digestionSpeed);
+        };
+    }
+
+    private void walkToRandomTile() {
     final float tileI =
         Math.abs(RANDOM.nextInt()) % (pen.getSize() - 2) + 1 + pen.getWorldCoord().x;
     final float tileJ =
@@ -132,4 +148,6 @@ public abstract class Creature extends Entity {
   public void takeDamage() {
     this.health -= 1;
   }
+
+  abstract CreatureType getType();
 }

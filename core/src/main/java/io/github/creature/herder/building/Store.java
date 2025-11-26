@@ -1,6 +1,7 @@
 package io.github.creature.herder.building;
 
 import io.github.creature.herder.food.Food;
+import io.github.creature.herder.items.FoodBag;
 import lombok.Getter;
 
 import java.util.Map;
@@ -12,11 +13,12 @@ import static io.github.creature.herder.util.RandomUtil.RANDOM;
 public class Store extends FoodDispenser {
     Map<Food, Double> foodMix;
 
-  public Store(Map<Food, Double> foodMix, final int x, final int y, final boolean flipped) {
+  public Store(Map<Food, Double> foodMix, final int price, final int x, final int y, final boolean flipped) {
       super(x,y,flipped);
       this.foodMix = foodMix;
       sanity(foodMix);
       fillFood();
+      this.price = price;
   }
 
     private void fillFood() {
@@ -37,5 +39,12 @@ public class Store extends FoodDispenser {
         if (foodMix.values().stream().mapToDouble(Double::doubleValue).sum() != 1.){
             throw new RuntimeException();
         }
+    }
+
+    @Override
+    public FoodBag pickUp() {
+        FoodBag foodBag = super.pickUp();
+        fillFood();
+        return foodBag;
     }
 }

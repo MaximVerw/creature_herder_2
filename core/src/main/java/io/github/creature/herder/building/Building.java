@@ -33,8 +33,8 @@ public class Building {
     pens.add(new Pen(6, 4, 12));
 
     stores = new ArrayList<>();
-    stores.add(new Store(Map.of(Food.STONE, 1.), 2, 0, false));
-    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .5, Food.STONE, .2), 4, 0, false));
+    stores.add(new Store(Map.of(Food.STONE, 1.), 1, 2, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .5, Food.STONE, .2), 3, 4, 0, false));
   }
 
   public boolean isWalkable(final int i, final int j) {
