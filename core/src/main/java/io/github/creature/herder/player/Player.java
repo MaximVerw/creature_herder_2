@@ -21,7 +21,7 @@ public class Player extends Entity {
   public static final Texture PLAYER_TEXTURE = new Texture("player_spread.png");
   static float PLAYER_OFFSET = -1f;
   public RenderableObject pickedUpObject;
-  private int money = 100;
+  private int money = 1000000;
 
   @Override
   protected Texture getTexture() {

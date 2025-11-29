@@ -10,9 +10,9 @@ import io.github.creature.herder.camera.WorldCamera;
 import io.github.creature.herder.creatures.Creature;
 import io.github.creature.herder.creatures.Rat;
 import io.github.creature.herder.input.InputHelper;
-import io.github.creature.herder.items.FoodBag;
 import io.github.creature.herder.player.Player;
 import io.github.creature.herder.render.Renderable;
+import io.github.creature.herder.render.RenderableObject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,7 +22,7 @@ public class BuildingScreen implements Screen {
   public static Random RANDOM = new Random();
   public static Player player = new Player();
   public static List<Creature> creatures = new ArrayList<>();
-  public static List<FoodBag> items = new ArrayList<>();
+  public static List<RenderableObject> other = new ArrayList<>();
   public static Building building = new Building();
   SpriteBatch spriteBatch;
 
@@ -36,7 +36,7 @@ public class BuildingScreen implements Screen {
         .forEach(
             pen -> {
               for (int i = 0; i < 5; i++) {
-                final Rat rat = new Rat(pen, .5f + RANDOM.nextFloat() * .6f - .3f, 1f);
+                final Rat rat = new Rat(pen, 1f + (RANDOM.nextFloat() * 2f - 1f) * .3f, 1f, true);
                 creatures.add(rat);
               }
             });
@@ -50,11 +50,12 @@ public class BuildingScreen implements Screen {
     ScreenUtils.clear(Color.BLACK);
 
     // creatures
-    creatures.removeAll(creatures.stream().filter(Creature::removeMe).toList());
+    creatures.removeAll(creatures.stream().filter(Creature::isDisposed).toList());
     new ArrayList<>(creatures).forEach(creature -> creature.update(delta));
 
     // items
-    items.forEach(item -> item.update(delta));
+    other.removeAll(other.stream().filter(RenderableObject::isDisposed).toList());
+    other.forEach(item -> item.update(delta));
 
     // player
     player.update(delta);
@@ -65,7 +66,7 @@ public class BuildingScreen implements Screen {
   private void drawSprites() {
     final List<Renderable> renderables = new ArrayList<>(building.getRenderables());
     creatures.forEach(creature -> renderables.add(creature.getRenderable()));
-    items.forEach(item -> renderables.add(item.getRenderable()));
+    other.forEach(item -> renderables.add(item.getRenderable()));
     renderables.add(player.getRenderable());
 
     spriteBatch.setProjectionMatrix(WorldCamera.camera.combined);

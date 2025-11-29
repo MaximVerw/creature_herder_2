@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @Getter
 public class Stomach {
-  public static final int DEFAULT_STOMACH_SIZE = 5;
+  public static final int DEFAULT_STOMACH_SIZE = 10;
   int stomachSize;
   List<DigestionTrack> digestionTracks;
   List<Food> food;
@@ -28,7 +28,7 @@ public class Stomach {
   }
 
   public boolean foodCheck() {
-    return RANDOM.nextFloat() < (.005f * digestionSpeed);
+    return RANDOM.nextFloat() < (.003f * digestionSpeed);
   }
 
   public Optional<Food> processFood() {
@@ -47,14 +47,17 @@ public class Stomach {
     return digestionTracks.stream().anyMatch(digestionTrack -> digestionTrack.canDigest(food));
   }
 
-  public void takeFood(final FoodDispenser dispenser) {
+  public boolean takeFood(final FoodDispenser dispenser) {
+    boolean ate = false;
     while (food.size() < stomachSize && !dispenser.getFoods().isEmpty()) {
       food.add(dispenser.getFoods().getLast());
       dispenser.getFoods().removeLast();
+      ate = true;
     }
+    return ate;
   }
 
-  public boolean isFull() {
-    return food.size() == stomachSize;
+  public boolean isHungry() {
+    return food.size() <= stomachSize / 2;
   }
 }

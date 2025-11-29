@@ -9,12 +9,15 @@ import java.util.List;
 public class Rat extends Creature {
   public static final Texture RAT_TEXTURE = new Texture("rat.png");
 
-  public Rat(final Pen pen, final float size, final float digestionSpeed) {
+  public Rat(
+      final Pen pen, final float size, final float digestionSpeed, final boolean alreadyGrown) {
     super(
         pen,
         size,
         digestionSpeed,
-        List.of(new MeatEatingDigestionTrack(), new RotEatingDigestionTrack()));
+        List.of(new MeatEatingDigestionTrack(), new RotEatingDigestionTrack()),
+        alreadyGrown);
+    this.health = (int) (this.health * 1.5f);
   }
 
   @Override

@@ -87,4 +87,8 @@ public class Pen {
   public Vector2 getDispenserPosition() {
     return new Vector2(worldCoord.x + DISPENSER_X_OFFSET, worldCoord.y);
   }
+
+  public boolean isOverCrowded() {
+    return creatures.size() >= Math.pow(size, 1.5);
+  }
 }

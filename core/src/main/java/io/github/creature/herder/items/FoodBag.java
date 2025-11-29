@@ -14,7 +14,7 @@ import java.util.List;
 
 public class FoodBag extends RenderableObject {
   public static final Texture FOOD_BAG_TEXTURE = new Texture("llama.png");
-  public static int MAX_FOODS = 50;
+  public static int MAX_FOODS = 100;
   public List<Food> foods = new ArrayList<>();
 
   public FoodBag(FoodDispenser dispenser) {
@@ -31,10 +31,7 @@ public class FoodBag extends RenderableObject {
             FOOD_BAG_TEXTURE, new Vector2(), new Vector2(.5f, .5f), new Vector2(.3f, .05f), 5f);
   }
 
-  public List<Renderable> getRenderables() {
-    return List.of(renderable);
-  }
-
+  @Override
   public void update(float delta) {
     renderable.woordCoord = Player.computePickedUpWorldCoord();
   }

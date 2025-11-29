@@ -99,7 +99,7 @@ public class InputHelper {
             foodBag.foods.removeLast();
           }
           if (foodBag.foods.isEmpty()) {
-            items.remove(foodBag);
+            foodBag.isDisposed = true;
             player.pickedUpObject = null;
           }
         });
@@ -145,7 +145,7 @@ public class InputHelper {
       FoodBag newBag = dispenser.pickUp();
       if (!newBag.foods.isEmpty()) {
         player.pickedUpObject = newBag;
-        items.add(newBag);
+        other.add(newBag);
       }
     }
   }

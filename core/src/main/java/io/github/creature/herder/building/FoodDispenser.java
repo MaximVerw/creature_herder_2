@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @Getter
 public class FoodDispenser extends RenderableObject {
-  public static final int FOODS_PER_DISPLAY_SLOT = 3;
+  public static final int FOODS_PER_DISPLAY_SLOT = 1;
   public static final Texture FOOD_DISPENSER_TEXTURE = new Texture("foodDispenser.png");
   int maxFood;
   List<Food> foods;
@@ -45,7 +45,7 @@ public class FoodDispenser extends RenderableObject {
     for (int i = 0; i < maxFoods; i++) {
       renderables.add(
           new Renderable(
-              foods.get(i * 3).getTexture(),
+              foods.get(i * FOODS_PER_DISPLAY_SLOT).getTexture(),
               foodWorldCoords.get(i),
               new Vector2(.1f, .1f),
               new Vector2(.5f, .5f),
@@ -62,11 +62,11 @@ public class FoodDispenser extends RenderableObject {
     final List<Vector2> displayPositions = new ArrayList<>();
     float delta = spriteWidth / 6f;
 
-    for (int z = 0; z < 3; z++) {
+    for (int z = 0; z < 4; z++) {
       for (float i = 0; i < 4; i++) {
         for (float j = 0; j < 4; j++) {
 
-          float offsetX = (i + 2f + j - z / 4f - 2f) * delta;
+          float offsetX = (i + 2f + j - z / 4f - 1.8f) * delta;
           float offsetY = (j + z / 4f - 2f) * delta;
           displayPositions.add(
               new Vector2(x + (flipped ? offsetY : offsetX), y + (flipped ? offsetX : offsetY)));

@@ -9,4 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RenderableObject {
   public Renderable renderable;
+  public boolean isDisposed = false;
+
+  public void update(float delta) {}
+  ;
 }

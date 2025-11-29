@@ -53,6 +53,4 @@ public abstract class Entity extends RenderableObject {
   }
 
   protected abstract Texture getTexture();
-
-  public abstract void update(float delta);
 }
