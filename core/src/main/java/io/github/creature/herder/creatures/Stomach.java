@@ -31,13 +31,13 @@ public class Stomach {
     return RANDOM.nextFloat() < (.005f * digestionSpeed);
   }
 
-  public Optional<Food> processFood(final Creature creature) {
+  public Optional<Food> processFood() {
     final int digestionTrackIndex = RANDOM.nextInt(digestionTracks.size());
     for (int i = 0; i < digestionTracks.size(); i++) {
       final DigestionTrack digestionTrack =
           digestionTracks.get((digestionTrackIndex + i) % digestionTracks.size());
       if (digestionTrack.canDigest(food)) {
-        return digestionTrack.digest(food, creature);
+        return digestionTrack.digest(food);
       }
     }
     throw new RuntimeException("Stomach problems");

@@ -27,8 +27,8 @@ public class Pen {
     this.worldCoord = new Vector2(x, y);
     this.size = size;
     this.creatures = new ArrayList<>();
-    this.dispenser = new FoodDispenser( x + DISPENSER_X_OFFSET, y, false);
-    this.dump = new FoodDispenser( x, y + DISPENSER_X_OFFSET, true);
+    this.dispenser = new FoodDispenser(x + DISPENSER_X_OFFSET, y, false);
+    this.dump = new FoodDispenser(x, y + DISPENSER_X_OFFSET, true);
     fillFoods();
 
     penTiles = new ArrayList<>();

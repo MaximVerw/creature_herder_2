@@ -34,6 +34,7 @@ public abstract class Creature extends Entity {
     this.speed = this.getSpeed() / this.speed;
     this.stomach = new Stomach(size, digestionSpeed, digestionTracks);
     this.health = 10;
+    goGetFood();
   }
 
   @Override
@@ -45,7 +46,7 @@ public abstract class Creature extends Entity {
       }
     } else if (state.getState().equals(EntityState.State.WALKING)) {
       final Vector2 creatureWorldCoord = renderable.getWorldCoord();
-      if (creatureWorldCoord.dst2(state.getTargetWorldCoord()) < .1f) {
+      if (creatureWorldCoord.dst2(state.getTargetWorldCoord()) < .05f) {
         if (creatureWorldCoord.dst2(pen.getDispenserPosition()) < .11f) {
           this.stomach.takeFood(this.pen.getDispenser());
         }
@@ -66,13 +67,18 @@ public abstract class Creature extends Entity {
   }
 
   private void processFood() {
-    if (!state.getState().equals(EntityState.State.DEAD) && pen != null && stomach.foodCheck()) {
+    if (state.getState().equals(EntityState.State.IDLE) && pen != null && stomach.foodCheck()) {
       if (!stomach.canEat()) {
+        if (!stomach.food.isEmpty()) {
+          poop(stomach.food.getFirst());
+        } else {
+          int n = 0;
+        }
         takeDamage();
         goGetFood();
       } else {
-        final Optional<Food> poopOpt = stomach.processFood(this);
-        poopOpt.ifPresent(poop -> pen.getDump().addFood(poop));
+        final Optional<Food> poopOpt = stomach.processFood();
+        poopOpt.ifPresent(this::poop);
         if (!stomach.canEat()) {
           goGetFood();
         }
@@ -81,21 +87,26 @@ public abstract class Creature extends Entity {
     }
   }
 
-    private void reproduce() {
-      if (RANDOM.nextFloat()<0.01f){
-          Creature child = createCreature(getType(), pen, size, stomach.digestionSpeed);
-          child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
-          creatures.add(child);
-      }
-    }
+  private boolean poop(Food poop) {
+    return pen.getDump().addFood(poop);
+  }
 
-    public static Creature createCreature(CreatureType type, Pen pen, float size, float digestionSpeed) {
-        return switch (type) {
-            case RAT -> new Rat(pen, size, digestionSpeed);
-        };
+  private void reproduce() {
+    if (RANDOM.nextFloat() < 0.01f) {
+      Creature child = createCreature(getType(), pen, size, stomach.digestionSpeed);
+      child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
+      creatures.add(child);
     }
+  }
 
-    private void walkToRandomTile() {
+  public static Creature createCreature(
+      CreatureType type, Pen pen, float size, float digestionSpeed) {
+    return switch (type) {
+      case RAT -> new Rat(pen, size, digestionSpeed);
+    };
+  }
+
+  private void walkToRandomTile() {
     final float tileI =
         Math.abs(RANDOM.nextInt()) % (pen.getSize() - 2) + 1 + pen.getWorldCoord().x;
     final float tileJ =

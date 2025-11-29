@@ -74,7 +74,7 @@ public class InputHelper {
                   pickable.add(pen.getDispenser());
                   pickable.add(pen.getDump());
                 });
-          pickable.addAll(building.getStores());
+        pickable.addAll(building.getStores());
         Optional<ClosestObjectWithDistance> closestRenderableObject =
             getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
         closestRenderableObject.ifPresent(InputHelper::pickUpObject);
@@ -132,23 +132,22 @@ public class InputHelper {
   }
 
   private static void pickUpObject(ClosestObjectWithDistance closestObjectWithDistance) {
-      if (player.pickedUpObject != null || closestObjectWithDistance.distance() > 1f) {
-          return;
-      }
+    if (player.pickedUpObject != null || closestObjectWithDistance.distance() > 1f) {
+      return;
+    }
 
-      if (closestObjectWithDistance.object() instanceof Creature creature) {
-          if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
-              creature.pickUp();
-              player.pickedUpObject = creature;
-          }
-      } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
-          FoodBag newBag = dispenser.pickUp();
-          if (!newBag.foods.isEmpty()) {
-              player.pickedUpObject = newBag;
-              items.add(newBag);
-          }
-
+    if (closestObjectWithDistance.object() instanceof Creature creature) {
+      if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
+        creature.pickUp();
+        player.pickedUpObject = creature;
       }
+    } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
+      FoodBag newBag = dispenser.pickUp();
+      if (!newBag.foods.isEmpty()) {
+        player.pickedUpObject = newBag;
+        items.add(newBag);
+      }
+    }
   }
 
   public static boolean isWalkingDown() {

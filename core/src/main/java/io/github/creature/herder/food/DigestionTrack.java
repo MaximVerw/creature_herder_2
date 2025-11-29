@@ -1,7 +1,5 @@
 package io.github.creature.herder.food;
 
-import io.github.creature.herder.creatures.Creature;
-import io.github.creature.herder.creatures.Rat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -9,16 +7,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class DigestionTrack {
-  public Optional<Food> digest(final Collection<Food> foods, final Creature creature) {
+  public Optional<Food> digest(final Collection<Food> foods) {
     if (!canDigest(foods)) {
       throw new RuntimeException("ELA, dat is niet eetbaar!");
     }
     final Collection<Food> requirements = getRequirements();
 
     for (final Food requirement : requirements) {
-      if (requirement.equals(Food.ROTTEN) && !(creature instanceof Rat)) {
-        creature.takeDamage();
-      }
       foods.remove(requirement);
     }
 

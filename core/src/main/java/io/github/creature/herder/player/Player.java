@@ -3,6 +3,7 @@ package io.github.creature.herder.player;
 import static io.github.creature.herder.camera.WorldCamera.ZOOM;
 import static io.github.creature.herder.screen.BuildingScreen.player;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 import io.github.creature.herder.camera.WorldCamera;
@@ -17,13 +18,14 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Player extends Entity {
+  public static final Texture PLAYER_TEXTURE = new Texture("player_spread.png");
   static float PLAYER_OFFSET = -1f;
   public RenderableObject pickedUpObject;
-    private int money = 100;
+  private int money = 100;
 
-    @Override
-  protected String getTextureFileName() {
-    return "player_spread.png";
+  @Override
+  protected Texture getTexture() {
+    return PLAYER_TEXTURE;
   }
 
   @Override

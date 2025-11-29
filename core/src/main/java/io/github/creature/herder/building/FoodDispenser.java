@@ -10,11 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 
-import static io.github.creature.herder.screen.BuildingScreen.player;
-
 @Getter
 public class FoodDispenser extends RenderableObject {
   public static final int FOODS_PER_DISPLAY_SLOT = 3;
+  public static final Texture FOOD_DISPENSER_TEXTURE = new Texture("foodDispenser.png");
   int maxFood;
   List<Food> foods;
   List<Vector2> foodWorldCoords;
@@ -22,10 +21,9 @@ public class FoodDispenser extends RenderableObject {
   int price;
 
   public FoodDispenser(final int x, final int y, final boolean flipped) {
-    final Texture texture = new Texture("foodDispenser.png");
     renderable =
         new Renderable(
-            texture,
+            FOOD_DISPENSER_TEXTURE,
             new Vector2(x, y),
             new Vector2(1f, 1f),
             new Vector2(.5f, .25f),
@@ -86,7 +84,7 @@ public class FoodDispenser extends RenderableObject {
     return false;
   }
 
-    public FoodBag pickUp() {
-        return new FoodBag(this);
-    }
+  public FoodBag pickUp() {
+    return new FoodBag(this);
+  }
 }

@@ -8,14 +8,14 @@ import lombok.Getter;
 
 @Getter
 public class Window extends RenderableObject {
+  public static final Texture WINDOW_TEXTURE = new Texture("window.png");
   boolean facingLeft;
 
   Window(final boolean facingLeft, final int x, final int y) {
-    final Texture texture = new Texture("window.png");
     this.facingLeft = facingLeft;
     this.renderable =
         new Renderable(
-            texture,
+            WINDOW_TEXTURE,
             new Vector2(x, y),
             new Vector2(1f, .5f),
             new Vector2(.5f, .5f),

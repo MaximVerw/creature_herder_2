@@ -63,7 +63,9 @@ public class Building {
   }
 
   public Optional<FoodDispenser> isDispenser(Vector2 worldCoord) {
-    return Stream.concat(stores.stream(), pens.stream().flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump())))
+    return Stream.concat(
+            stores.stream(),
+            pens.stream().flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump())))
         .filter(foodDispenser -> foodDispenser.getRenderable().woordCoord.dst(worldCoord) < 1f)
         .findAny();
   }

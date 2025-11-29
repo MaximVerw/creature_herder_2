@@ -12,12 +12,10 @@ import lombok.Getter;
 public abstract class Entity extends RenderableObject {
   public static final int SPRITE_WIDTH = 16;
   public static final int SPRITE_HEIGHT = 24;
-  protected Texture texture;
   protected EntityState state;
   float speed;
 
   public Entity() {
-    texture = new Texture(getTextureFileName());
     state = new EntityState();
     renderable =
         new Renderable(
@@ -33,7 +31,7 @@ public abstract class Entity extends RenderableObject {
 
   protected TextureRegion getRegion(final EntityState state) {
     return new TextureRegion(
-        texture,
+        getTexture(),
         state.getDirection().ordinal() * SPRITE_WIDTH,
         SPRITE_HEIGHT * getAnimationOffset(state),
         SPRITE_WIDTH,
@@ -54,7 +52,7 @@ public abstract class Entity extends RenderableObject {
     return 0;
   }
 
-  protected abstract String getTextureFileName();
+  protected abstract Texture getTexture();
 
   public abstract void update(float delta);
 }
