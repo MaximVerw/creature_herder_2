@@ -1,10 +1,14 @@
 package io.github.creature.herder.creatures;
 
+import static io.github.creature.herder.creatures.Creature.MOUTH_ANCHOR;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
+import io.github.creature.herder.building.DispensedFood;
 import io.github.creature.herder.building.FoodDispenser;
 import io.github.creature.herder.food.DigestionTrack;
+import io.github.creature.herder.food.EatenFood;
 import io.github.creature.herder.food.Food;
+import io.github.creature.herder.screen.BuildingScreen;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,17 +51,22 @@ public class Stomach {
     return digestionTracks.stream().anyMatch(digestionTrack -> digestionTrack.canDigest(food));
   }
 
-  public boolean takeFood(final FoodDispenser dispenser) {
-    boolean ate = false;
+  public void takeFood(final FoodDispenser dispenser, Creature stomachOwner) {
     while (food.size() < stomachSize && !dispenser.getFoods().isEmpty()) {
-      food.add(dispenser.getFoods().getLast());
-      dispenser.getFoods().removeLast();
-      ate = true;
+      DispensedFood dispensed = dispenser.dispense();
+      BuildingScreen.other.add(
+          new EatenFood(dispensed.worldCoord(), dispensed.food(), stomachOwner, MOUTH_ANCHOR));
+      this.food.add(dispensed.food());
     }
-    return ate;
   }
 
   public boolean isHungry() {
     return food.size() <= stomachSize / 2;
+  }
+
+  public Optional<Food> getUselessFood() {
+    return food.stream()
+        .filter(f -> digestionTracks.stream().noneMatch(dt -> dt.getRequirements().contains(f)))
+        .findAny();
   }
 }

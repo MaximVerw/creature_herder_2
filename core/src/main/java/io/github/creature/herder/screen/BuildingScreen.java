@@ -81,15 +81,13 @@ public class BuildingScreen implements Screen {
   }
 
   private void drawRenderable(Renderable renderable, SpriteBatch spriteBatch) {
-    float width = renderable.getScreenWidth();
-    float height = renderable.getScreenHeight();
-    Vector2 position = renderable.getScreenCoord();
+    Vector2 bottomLeftCoord = renderable.getScreenCoord(new Vector2(0f, 0f));
     spriteBatch.draw(
         renderable.sprite,
-        (renderable.flipX ? width : 0) + position.x - width * renderable.anchor.x,
-        position.y - height * renderable.anchor.y,
-        (renderable.flipX ? -1 : 1) * width,
-        height);
+        bottomLeftCoord.x,
+        bottomLeftCoord.y,
+        (renderable.flipX ? -1 : 1) * renderable.getScreenWidth(),
+        renderable.getScreenHeight());
   }
 
   @Override

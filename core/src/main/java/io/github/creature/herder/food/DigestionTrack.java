@@ -28,9 +28,9 @@ public abstract class DigestionTrack {
         .noneMatch(e -> foodFrequencies.getOrDefault(e.getKey(), 0L) < e.getValue());
   }
 
-  abstract Collection<Food> getRequirements();
+  public abstract Collection<Food> getRequirements();
 
-  abstract Optional<Food> getPoop();
+  public abstract Optional<Food> getPoop();
 
   private Map<Food, Long> getFoodFrequencies(final Collection<Food> foods) {
     return foods.stream()

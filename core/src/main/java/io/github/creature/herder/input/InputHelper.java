@@ -47,38 +47,41 @@ public class InputHelper {
       WorldCamera.ZOOM /= 1.05f;
     }
 
+    boolean walkingSideways = false;
     if (isWalkingRight()) {
+      walkingSideways = true;
       WorldCamera.position.add(
           CoordUtil.WorldToCamera(new Vector2(-1, 1).scl(WALKING_SPEED * delta)));
     }
     if (isWalkingLeft()) {
+      walkingSideways = true;
       WorldCamera.position.add(
           CoordUtil.WorldToCamera(new Vector2(1, -1).scl(WALKING_SPEED * delta)));
     }
     if (isWalkingUp()) {
       WorldCamera.position.add(
-          CoordUtil.WorldToCamera(new Vector2(1, 1).scl(WALKING_SPEED * delta * 1.77f)));
+          CoordUtil.WorldToCamera(
+              new Vector2(1, 1).scl(WALKING_SPEED * delta * (walkingSideways ? 1f : 2f))));
     }
     if (isWalkingDown()) {
       WorldCamera.position.add(
-          CoordUtil.WorldToCamera(new Vector2(-1, -1).scl(WALKING_SPEED * delta * 1.77f)));
+          CoordUtil.WorldToCamera(
+              new Vector2(-1, -1).scl(WALKING_SPEED * delta * (walkingSideways ? 1f : 2f))));
     }
 
     if (Gdx.input.isKeyPressed(Input.Keys.O)) {
-      if (player.getPickedUpObject() == null) {
-        List<RenderableObject> pickable = new ArrayList<>(creatures);
-        building
-            .getPens()
-            .forEach(
-                pen -> {
-                  pickable.add(pen.getDispenser());
-                  pickable.add(pen.getDump());
-                });
-        pickable.addAll(building.getStores());
-        Optional<ClosestObjectWithDistance> closestRenderableObject =
-            getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
-        closestRenderableObject.ifPresent(InputHelper::pickUpObject);
-      }
+      List<RenderableObject> pickable = new ArrayList<>(creatures);
+      building
+          .getPens()
+          .forEach(
+              pen -> {
+                pickable.add(pen.getDispenser());
+                pickable.add(pen.getDump());
+              });
+      pickable.addAll(building.getStores());
+      Optional<ClosestObjectWithDistance> closestRenderableObject =
+          getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
+      closestRenderableObject.ifPresent(InputHelper::pickUpObject);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.P) && player.getPickedUpObject() != null) {
       if (player.getPickedUpObject() instanceof Creature creature) {
@@ -132,20 +135,26 @@ public class InputHelper {
   }
 
   private static void pickUpObject(ClosestObjectWithDistance closestObjectWithDistance) {
-    if (player.pickedUpObject != null || closestObjectWithDistance.distance() > 1f) {
+    if (closestObjectWithDistance.distance() > 1f) {
       return;
     }
 
-    if (closestObjectWithDistance.object() instanceof Creature creature) {
-      if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
-        creature.pickUp();
-        player.pickedUpObject = creature;
+    if (player.pickedUpObject == null) {
+      if (closestObjectWithDistance.object() instanceof Creature creature) {
+        if (Creature.IDLE_STATES.contains(creature.getState().getState())) {
+          creature.pickUp();
+          player.pickedUpObject = creature;
+        }
+      } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
+        if (!dispenser.getFoods().isEmpty()) {
+          FoodBag newBag = new FoodBag();
+          player.pickedUpObject = newBag;
+          other.add(newBag);
+        }
       }
-    } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
-      FoodBag newBag = dispenser.pickUp();
-      if (!newBag.foods.isEmpty()) {
-        player.pickedUpObject = newBag;
-        other.add(newBag);
+    } else if (player.pickedUpObject instanceof FoodBag foodBag) {
+      if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
+        foodBag.pickUp(dispenser);
       }
     }
   }

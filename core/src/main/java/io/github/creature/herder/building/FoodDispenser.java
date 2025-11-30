@@ -1,9 +1,10 @@
 package io.github.creature.herder.building;
 
+import static io.github.creature.herder.food.Food.FOOD_SIZE;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.food.Food;
-import io.github.creature.herder.items.FoodBag;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
 import java.util.ArrayList;
@@ -12,7 +13,6 @@ import lombok.Getter;
 
 @Getter
 public class FoodDispenser extends RenderableObject {
-  public static final int FOODS_PER_DISPLAY_SLOT = 1;
   public static final Texture FOOD_DISPENSER_TEXTURE = new Texture("foodDispenser.png");
   int maxFood;
   List<Food> foods;
@@ -33,7 +33,7 @@ public class FoodDispenser extends RenderableObject {
     this.flipped = flipped;
     this.foods = new ArrayList<>();
     foodWorldCoords = createFoodDisplayPositions();
-    this.maxFood = FOODS_PER_DISPLAY_SLOT * foodWorldCoords.size();
+    this.maxFood = foodWorldCoords.size();
     this.price = 0;
   }
 
@@ -41,13 +41,13 @@ public class FoodDispenser extends RenderableObject {
     final List<Renderable> renderables = new ArrayList<>();
     renderables.add(this.renderable);
 
-    int maxFoods = Math.min(foodWorldCoords.size(), foods.size() / FOODS_PER_DISPLAY_SLOT);
+    int maxFoods = Math.min(foodWorldCoords.size(), foods.size());
     for (int i = 0; i < maxFoods; i++) {
       renderables.add(
           new Renderable(
-              foods.get(i * FOODS_PER_DISPLAY_SLOT).getTexture(),
+              foods.get(i).getTexture(),
               foodWorldCoords.get(i),
-              new Vector2(.1f, .1f),
+              new Vector2(FOOD_SIZE, FOOD_SIZE),
               new Vector2(.5f, .5f),
               5f));
     }
@@ -77,14 +77,25 @@ public class FoodDispenser extends RenderableObject {
   }
 
   public boolean addFood(Food food) {
-    if (foods.size() < maxFood) {
-      foods.add(food);
+    return insertFood(food, foods.size());
+  }
+
+  protected boolean insertFood(Food food, int index) {
+    if (foods.size() < maxFood && index >= 0 && index <= foods.size()) {
+      foods.add(index, food);
       return true;
     }
     return false;
   }
 
-  public FoodBag pickUp() {
-    return new FoodBag(this);
+  public Vector2 getFoodWorldCoord(int foodIndex) {
+    return foodWorldCoords.get(Math.min(foodWorldCoords.size() - 1, foodIndex)).cpy();
+  }
+
+  public DispensedFood dispense() {
+    DispensedFood dispensedFood =
+        new DispensedFood(foods.getLast(), foodWorldCoords.get(foods.size() - 1).cpy());
+    foods.removeLast();
+    return dispensedFood;
   }
 }

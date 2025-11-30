@@ -54,8 +54,25 @@ public class Renderable {
     return CoordUtil.WorldToScreen(getWorldCoord());
   }
 
+  public Vector2 getScreenCoord(Vector2 customAnchor) {
+    Vector2 screenCoord = getScreenCoord();
+    float width = getScreenWidth();
+    float height = getScreenHeight();
+    Vector2 bottomLeftScreen =
+        new Vector2(
+            (flipX ? width : 0) + screenCoord.x - width * anchor.x,
+            screenCoord.y - height * anchor.y);
+
+    return bottomLeftScreen.add(
+        (flipX ? -1f : 1f) * width * customAnchor.x, height * customAnchor.y);
+  }
+
   public Vector2 getWorldCoord() {
     return woordCoord;
+  }
+
+  public Vector2 getWorldCoord(Vector2 customAnchor) {
+    return CoordUtil.ScreenToWorld(getScreenCoord(customAnchor));
   }
 
   public float getScreenWidth() {

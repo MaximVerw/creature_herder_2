@@ -8,6 +8,7 @@ public enum Food {
   MEAT,
   STONE;
 
+  public static final float FOOD_SIZE = .1f;
   private static Map<Food, Texture> TEXTURES_MAP = createTextures();
 
   public Texture getTexture() {

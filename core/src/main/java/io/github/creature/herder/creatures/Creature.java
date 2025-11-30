@@ -10,11 +10,13 @@ import io.github.creature.herder.building.Pen;
 import io.github.creature.herder.emotes.YuckEmote;
 import io.github.creature.herder.food.DigestionTrack;
 import io.github.creature.herder.food.Food;
+import io.github.creature.herder.food.FoodPoop;
 import io.github.creature.herder.screen.BuildingScreen;
 import java.util.List;
 import java.util.Optional;
 
 public abstract class Creature extends Entity {
+  public static final Vector2 MOUTH_ANCHOR = new Vector2(.5f, .5f);
   public static List<EntityState.State> IDLE_STATES =
       List.of(EntityState.State.WALKING, EntityState.State.IDLE);
   Pen pen;
@@ -53,10 +55,7 @@ public abstract class Creature extends Entity {
       final Vector2 creatureWorldCoord = renderable.getWorldCoord();
       if (creatureWorldCoord.dst2(state.getTargetWorldCoord()) < .05f) {
         if (creatureWorldCoord.dst2(pen.getDispenserPosition()) < .11f) {
-          boolean ate = this.stomach.takeFood(this.pen.getDispenser());
-          if (ate) {
-            // TODO eat animation
-          }
+          this.stomach.takeFood(this.pen.getDispenser(), this);
         }
         state.idle();
       } else {
@@ -80,18 +79,19 @@ public abstract class Creature extends Entity {
       growth = Math.min(1f, growth + 0.01f);
       if (!stomach.canEat()) {
         if (!stomach.food.isEmpty()) {
-          yuckEmote();
-          poop(stomach.food.getFirst());
-          stomach.food.removeFirst();
-        } else {
-
+          Optional<Food> uselessFood = stomach.getUselessFood();
+          if (uselessFood.isPresent()) {
+            yuckEmote();
+            poop(uselessFood.get(), true);
+            stomach.food.remove(uselessFood.get());
+          }
         }
         takeDamage();
         goGetFood();
       } else {
         this.renderable.size = getSizeVector();
         final Optional<Food> poopOpt = stomach.processFood();
-        poopOpt.ifPresent(this::poop);
+        poopOpt.ifPresent(x -> poop(x, false));
         if (!stomach.canEat()) {
           goGetFood();
         }
@@ -102,14 +102,13 @@ public abstract class Creature extends Entity {
     }
   }
 
-  private boolean yuckEmote() {
-    return BuildingScreen.other.add(
-        new YuckEmote(renderable.getWorldCoord().cpy().add(renderable.size.y, renderable.size.y)));
+  private void yuckEmote() {
+    BuildingScreen.other.add(new YuckEmote(renderable.getWorldCoord(MOUTH_ANCHOR)));
   }
 
-  private void poop(Food poop) {
-    // TODO poop animation
-    pen.getDump().addFood(poop);
+  private void poop(Food poop, boolean withOffset) {
+    BuildingScreen.other.add(
+        new FoodPoop(renderable.getWorldCoord(MOUTH_ANCHOR), poop, pen.getDump(), withOffset));
   }
 
   private void reproduce() {

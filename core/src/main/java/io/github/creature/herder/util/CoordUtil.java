@@ -35,16 +35,10 @@ public class CoordUtil {
   }
 
   public static Vector2 CameraToScreen(Vector2 cameraCoord, Vector2 cameraPosition) {
-    float x = cameraCoord.x; // * Gdx.graphics.getWidth();
-    float y = cameraCoord.y; // * Gdx.graphics.getHeight();
-
-    return new Vector2((x - cameraPosition.x) * ZOOM, (y - cameraPosition.y) * ZOOM);
+    return cameraCoord.cpy().sub(cameraPosition).scl(ZOOM);
   }
 
   public static Vector2 ScreenToCamera(Vector2 screenCoord, Vector2 cameraPosition) {
-    float x = screenCoord.x + cameraPosition.x;
-    float y = screenCoord.y + cameraPosition.y;
-    return new Vector2(x, y)
-        .scl(1f / ZOOM); // new Vector2(x / Gdx.graphics.getWidth(), y / Gdx.graphics.getHeight());
+    return screenCoord.cpy().scl(1f / ZOOM).add(cameraPosition);
   }
 }

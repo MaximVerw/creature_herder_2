@@ -7,11 +7,12 @@ import java.util.Optional;
 public class MeatEatingDigestionTrack extends DigestionTrack {
 
   @Override
-  Collection<Food> getRequirements() {
+  public Collection<Food> getRequirements() {
     return List.of(Food.MEAT, Food.MEAT);
   }
 
-  Optional<Food> getPoop() {
+  @Override
+  public Optional<Food> getPoop() {
     return Optional.of(Food.ROTTEN);
   }
 }

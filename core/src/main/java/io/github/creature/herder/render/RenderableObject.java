@@ -12,5 +12,4 @@ public class RenderableObject {
   public boolean isDisposed = false;
 
   public void update(float delta) {}
-  ;
 }
