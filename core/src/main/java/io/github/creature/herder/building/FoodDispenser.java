@@ -1,10 +1,13 @@
 package io.github.creature.herder.building;
 
 import static io.github.creature.herder.food.Food.FOOD_SIZE;
+import static io.github.creature.herder.screen.BuildingScreen.other;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import io.github.creature.herder.food.EatenFood;
 import io.github.creature.herder.food.Food;
+import io.github.creature.herder.food.FoodPoop;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
 import java.util.ArrayList;
@@ -98,4 +101,13 @@ public class FoodDispenser extends RenderableObject {
     foods.removeLast();
     return dispensedFood;
   }
+
+    public int getAllocatedFoods() {
+        return (int) (other.stream().filter(o -> {
+                    if (o instanceof FoodPoop poop) {
+                        return poop.target.equals(this);
+                    }
+                    return false;
+                }).count() + foods.size());
+    }
 }

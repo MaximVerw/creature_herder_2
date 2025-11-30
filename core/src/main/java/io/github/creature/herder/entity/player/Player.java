@@ -1,12 +1,13 @@
-package io.github.creature.herder.player;
+package io.github.creature.herder.entity.player;
 
 import static io.github.creature.herder.screen.BuildingScreen.player;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
-import io.github.creature.herder.creatures.Entity;
-import io.github.creature.herder.creatures.EntityState;
+import io.github.creature.herder.entity.Direction;
+import io.github.creature.herder.entity.Entity;
+import io.github.creature.herder.entity.EntityState;
 import io.github.creature.herder.input.InputHelper;
 import io.github.creature.herder.render.RenderableObject;
 import io.github.creature.herder.util.CoordUtil;
@@ -20,7 +21,7 @@ public class Player extends Entity {
   public static final Texture PLAYER_TEXTURE = new Texture("player_spread.png");
   static float PLAYER_Y_OFFSET = -1f;
   public RenderableObject pickedUpObject;
-  private int money = 1000000;
+  private int money = 100;
   private Direction direction;
   private Direction wannabeDirection;
   private long time;

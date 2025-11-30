@@ -7,10 +7,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import io.github.creature.herder.building.Building;
 import io.github.creature.herder.camera.WorldCamera;
-import io.github.creature.herder.creatures.Creature;
-import io.github.creature.herder.creatures.Rat;
+import io.github.creature.herder.entity.creatures.Creature;
+import io.github.creature.herder.entity.creatures.Rat;
+import io.github.creature.herder.entity.customer.Customer;
 import io.github.creature.herder.input.InputHelper;
-import io.github.creature.herder.player.Player;
+import io.github.creature.herder.entity.player.Player;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class BuildingScreen implements Screen {
   public static Player player = new Player();
   public static List<Creature> creatures = new ArrayList<>();
   public static List<RenderableObject> other = new ArrayList<>();
+  public static List<Customer> customers = new ArrayList<>();
   public static Building building = new Building();
   SpriteBatch spriteBatch;
 
@@ -35,8 +37,8 @@ public class BuildingScreen implements Screen {
         .getPens()
         .forEach(
             pen -> {
-              for (int i = 0; i < 5; i++) {
-                final Rat rat = new Rat(pen, 1f + (RANDOM.nextFloat() * 2f - 1f) * .3f, 1f, true);
+              for (int i = 0; i < 3; i++) {
+                final Rat rat = new Rat(pen,  true);
                 creatures.add(rat);
               }
             });
@@ -44,29 +46,35 @@ public class BuildingScreen implements Screen {
 
   @Override
   public void render(final float delta) {
-    InputHelper.processInputs(delta);
-    WorldCamera.updateCamera();
+      InputHelper.processInputs(delta);
+      WorldCamera.updateCamera();
+      World.update(delta);
 
-    ScreenUtils.clear(Color.BLACK);
+      ScreenUtils.clear(Color.BLACK);
 
-    // creatures
-    creatures.removeAll(creatures.stream().filter(Creature::isDisposed).toList());
-    new ArrayList<>(creatures).forEach(creature -> creature.update(delta));
+      // creatures
+      creatures.removeAll(creatures.stream().filter(Creature::isDisposed).toList());
+      new ArrayList<>(creatures).forEach(creature -> creature.update(delta));
 
-    // items
-    other.removeAll(other.stream().filter(RenderableObject::isDisposed).toList());
-    other.forEach(item -> item.update(delta));
+      // items
+      other.removeAll(other.stream().filter(RenderableObject::isDisposed).toList());
+      other.forEach(item -> item.update(delta));
 
-    // player
-    player.update(delta);
+      // customers
+      customers.removeAll(customers.stream().filter(Customer::isDisposed).toList());
+      customers.forEach(customer -> customer.update(delta));
 
-    drawSprites();
+      // player
+      player.update(delta);
+
+      drawSprites();
   }
 
   private void drawSprites() {
     final List<Renderable> renderables = new ArrayList<>(building.getRenderables());
     creatures.forEach(creature -> renderables.add(creature.getRenderable()));
     other.forEach(item -> renderables.add(item.getRenderable()));
+    customers.forEach(customer -> renderables.add(customer.getRenderable()));
     renderables.add(player.getRenderable());
 
     spriteBatch.setProjectionMatrix(WorldCamera.camera.combined);

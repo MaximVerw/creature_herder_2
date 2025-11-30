@@ -8,7 +8,7 @@ import io.github.creature.herder.building.DispensedFood;
 import io.github.creature.herder.building.FoodDispenser;
 import io.github.creature.herder.food.EatenFood;
 import io.github.creature.herder.food.Food;
-import io.github.creature.herder.player.Player;
+import io.github.creature.herder.entity.player.Player;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
 import io.github.creature.herder.screen.BuildingScreen;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class FoodBag extends RenderableObject {
   public static final Texture FOOD_BAG_TEXTURE = new Texture("llama.png");
-  public static int MAX_FOODS = 100;
+  public static int MAX_FOODS = 60;
   public List<Food> foods = new ArrayList<>();
 
   public FoodBag() {

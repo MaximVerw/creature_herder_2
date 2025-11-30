@@ -3,7 +3,7 @@ package io.github.creature.herder.building;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.creature.herder.creatures.Creature;
+import io.github.creature.herder.entity.creatures.Creature;
 import io.github.creature.herder.food.Food;
 import io.github.creature.herder.render.Renderable;
 import java.util.ArrayList;

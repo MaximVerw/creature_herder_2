@@ -1,4 +1,4 @@
-package io.github.creature.herder.player;
+package io.github.creature.herder.entity;
 
 public enum Direction {
   North,

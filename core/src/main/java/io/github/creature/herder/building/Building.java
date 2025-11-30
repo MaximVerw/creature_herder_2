@@ -34,7 +34,8 @@ public class Building {
 
     stores = new ArrayList<>();
     stores.add(new Store(Map.of(Food.STONE, 1.), 1, 2, 0, false));
-    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .6, Food.STONE, .1), 3, 4, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .6, Food.STONE, .1), 2, 4, 0, false));
+      stores.add(new Store(Map.of(Food.MEAT, .7, Food.ROTTEN, .3), 5, 6, 0, false));
   }
 
   public boolean isWalkable(final int i, final int j) {

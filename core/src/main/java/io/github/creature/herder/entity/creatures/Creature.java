@@ -1,13 +1,16 @@
-package io.github.creature.herder.creatures;
+package io.github.creature.herder.entity.creatures;
 
-import static io.github.creature.herder.player.Player.computePickedUpWorldCoord;
+import static io.github.creature.herder.entity.player.Player.computePickedUpWorldCoord;
 import static io.github.creature.herder.screen.BuildingScreen.creatures;
 import static io.github.creature.herder.screen.BuildingScreen.player;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
 import com.badlogic.gdx.math.Vector2;
+import io.github.creature.herder.building.FoodDispenser;
 import io.github.creature.herder.building.Pen;
 import io.github.creature.herder.emotes.YuckEmote;
+import io.github.creature.herder.entity.Entity;
+import io.github.creature.herder.entity.EntityState;
 import io.github.creature.herder.food.DigestionTrack;
 import io.github.creature.herder.food.Food;
 import io.github.creature.herder.food.FoodPoop;
@@ -20,15 +23,17 @@ public abstract class Creature extends Entity {
   public static List<EntityState.State> IDLE_STATES =
       List.of(EntityState.State.WALKING, EntityState.State.IDLE);
   Pen pen;
-  float size;
-  Stomach stomach;
-  int health;
-  float growth;
+  public float size;
+  public Stomach stomach;
+  public int maxHealth;
+  public int health;
+  public float growth;
 
   Creature(
       final Pen pen,
       final float size,
       final float digestionSpeed,
+      final int health,
       final List<DigestionTrack> digestionTracks,
       final boolean alreadyGrown) {
     super();
@@ -39,8 +44,9 @@ public abstract class Creature extends Entity {
     this.renderable.size = getSizeVector();
     this.renderable.woordCoord = pen.getWorldCoord().cpy();
     this.speed = this.getSpeed() / this.speed;
-    this.stomach = new Stomach(size, digestionSpeed, digestionTracks);
-    this.health = 10;
+    this.stomach = new Stomach(growth, size, digestionSpeed, digestionTracks);
+    this.health = health;
+    this.maxHealth = this.health;
     goGetFood();
   }
 
@@ -76,8 +82,8 @@ public abstract class Creature extends Entity {
 
   private void processFood() {
     if (state.getState().equals(EntityState.State.IDLE) && pen != null && stomach.foodCheck()) {
-      growth = Math.min(1f, growth + 0.01f);
-      if (!stomach.canEat()) {
+        grow();
+        if (!stomach.canEat()) {
         if (!stomach.food.isEmpty()) {
           Optional<Food> uselessFood = stomach.getUselessFood();
           if (uselessFood.isPresent()) {
@@ -102,30 +108,38 @@ public abstract class Creature extends Entity {
     }
   }
 
-  private void yuckEmote() {
+    private void grow() {
+        growth = Math.min(1f, growth + 0.01f);
+        stomach.updateStomachSize(size, growth);
+    }
+
+    private void yuckEmote() {
     BuildingScreen.other.add(new YuckEmote(renderable.getWorldCoord(MOUTH_ANCHOR)));
   }
 
   private void poop(Food poop, boolean withOffset) {
+      FoodDispenser target;
+      if (pen.getDump().getAllocatedFoods()>=pen.getDump().getMaxFood()){
+          target = pen.getDispenser();
+      }else{
+          target = pen.getDump();
+      }
     BuildingScreen.other.add(
-        new FoodPoop(renderable.getWorldCoord(MOUTH_ANCHOR), poop, pen.getDump(), withOffset));
+        new FoodPoop(renderable.getWorldCoord(MOUTH_ANCHOR), poop, target, withOffset, false, Optional.empty()));
   }
 
   private void reproduce() {
     if (RANDOM.nextFloat() < 0.05f) {
-      float newSize = Math.clamp(size * (1 + (RANDOM.nextFloat() * 2f - 1f) / 5f), .7f, 1.5f);
-      float newDigestionSpeed =
-          Math.clamp(stomach.digestionSpeed * (1 + (RANDOM.nextFloat() * 2f - 1f) / 5f), .5f, 2.f);
-      Creature child = createCreature(getType(), pen, newSize, newDigestionSpeed, false);
+      Creature child = createCreature(getType(), pen, false);
       child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
       creatures.add(child);
     }
   }
 
   public static Creature createCreature(
-      CreatureType type, Pen pen, float size, float digestionSpeed, final boolean alreadyGrown) {
+      CreatureType type, Pen pen, final boolean alreadyGrown) {
     return switch (type) {
-      case RAT -> new Rat(pen, size, digestionSpeed, alreadyGrown);
+      case RAT -> new Rat(pen, alreadyGrown);
     };
   }
 

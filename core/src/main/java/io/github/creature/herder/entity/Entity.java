@@ -1,4 +1,4 @@
-package io.github.creature.herder.creatures;
+package io.github.creature.herder.entity;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -12,8 +12,8 @@ import lombok.Getter;
 public abstract class Entity extends RenderableObject {
   public static final int SPRITE_WIDTH = 16;
   public static final int SPRITE_HEIGHT = 24;
-  protected EntityState state;
-  float speed;
+    public float speed;
+    protected EntityState state;
 
   public Entity() {
     state = new EntityState();

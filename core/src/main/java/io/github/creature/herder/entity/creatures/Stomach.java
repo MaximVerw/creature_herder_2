@@ -1,6 +1,6 @@
-package io.github.creature.herder.creatures;
+package io.github.creature.herder.entity.creatures;
 
-import static io.github.creature.herder.creatures.Creature.MOUTH_ANCHOR;
+import static io.github.creature.herder.entity.creatures.Creature.MOUTH_ANCHOR;
 import static io.github.creature.herder.util.RandomUtil.RANDOM;
 
 import io.github.creature.herder.building.DispensedFood;
@@ -17,21 +17,26 @@ import lombok.Getter;
 @Getter
 public class Stomach {
   public static final int DEFAULT_STOMACH_SIZE = 10;
+  public static final int MINIMUM_STOMACH_SIZE = 5;
   int stomachSize;
   List<DigestionTrack> digestionTracks;
   List<Food> food;
   float digestionSpeed;
 
   Stomach(
-      final float size, final float digestionSpeed, final List<DigestionTrack> digestionTracks) {
+      final float growth, final float size, final float digestionSpeed, final List<DigestionTrack> digestionTracks) {
     super();
-    this.stomachSize = Math.round(DEFAULT_STOMACH_SIZE * size);
-    this.digestionSpeed = digestionSpeed;
+      updateStomachSize(size, growth);
+      this.digestionSpeed = digestionSpeed;
     this.digestionTracks = digestionTracks;
     this.food = new ArrayList<>();
   }
 
-  public boolean foodCheck() {
+    public void updateStomachSize(float creatureSize, float creatureGrowth) {
+        this.stomachSize = Math.max(MINIMUM_STOMACH_SIZE, Math.round(DEFAULT_STOMACH_SIZE * creatureSize*creatureGrowth));
+    }
+
+    public boolean foodCheck() {
     return RANDOM.nextFloat() < (.003f * digestionSpeed);
   }
 

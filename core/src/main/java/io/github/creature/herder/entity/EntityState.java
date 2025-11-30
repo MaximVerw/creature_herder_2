@@ -1,7 +1,7 @@
-package io.github.creature.herder.creatures;
+package io.github.creature.herder.entity;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.creature.herder.player.Direction;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
