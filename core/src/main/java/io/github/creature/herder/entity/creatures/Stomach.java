@@ -24,19 +24,24 @@ public class Stomach {
   float digestionSpeed;
 
   Stomach(
-      final float growth, final float size, final float digestionSpeed, final List<DigestionTrack> digestionTracks) {
+      final float growth,
+      final float size,
+      final float digestionSpeed,
+      final List<DigestionTrack> digestionTracks) {
     super();
-      updateStomachSize(size, growth);
-      this.digestionSpeed = digestionSpeed;
+    updateStomachSize(size, growth);
+    this.digestionSpeed = digestionSpeed;
     this.digestionTracks = digestionTracks;
     this.food = new ArrayList<>();
   }
 
-    public void updateStomachSize(float creatureSize, float creatureGrowth) {
-        this.stomachSize = Math.max(MINIMUM_STOMACH_SIZE, Math.round(DEFAULT_STOMACH_SIZE * creatureSize*creatureGrowth));
-    }
+  public void updateStomachSize(float creatureSize, float creatureGrowth) {
+    this.stomachSize =
+        Math.max(
+            MINIMUM_STOMACH_SIZE, Math.round(DEFAULT_STOMACH_SIZE * creatureSize * creatureGrowth));
+  }
 
-    public boolean foodCheck() {
+  public boolean foodCheck() {
     return RANDOM.nextFloat() < (.003f * digestionSpeed);
   }
 

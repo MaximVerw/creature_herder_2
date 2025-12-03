@@ -5,7 +5,6 @@ import static io.github.creature.herder.screen.BuildingScreen.other;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
-import io.github.creature.herder.food.EatenFood;
 import io.github.creature.herder.food.Food;
 import io.github.creature.herder.food.FoodPoop;
 import io.github.creature.herder.render.Renderable;
@@ -102,12 +101,17 @@ public class FoodDispenser extends RenderableObject {
     return dispensedFood;
   }
 
-    public int getAllocatedFoods() {
-        return (int) (other.stream().filter(o -> {
-                    if (o instanceof FoodPoop poop) {
+  public int getAllocatedFoods() {
+    return (int)
+        (other.stream()
+                .filter(
+                    o -> {
+                      if (o instanceof FoodPoop poop) {
                         return poop.target.equals(this);
-                    }
-                    return false;
-                }).count() + foods.size());
-    }
+                      }
+                      return false;
+                    })
+                .count()
+            + foods.size());
+  }
 }

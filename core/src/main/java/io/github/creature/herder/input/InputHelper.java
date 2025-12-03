@@ -8,18 +8,17 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import io.github.creature.herder.building.FoodDispenser;
 import io.github.creature.herder.building.Pen;
+import io.github.creature.herder.building.TrashContainer;
 import io.github.creature.herder.camera.WorldCamera;
-import io.github.creature.herder.entity.Entity;
+import io.github.creature.herder.entity.EntityState;
+import io.github.creature.herder.entity.creatures.Creature;
 import io.github.creature.herder.entity.customer.Customer;
-import io.github.creature.herder.food.EatenFood;
 import io.github.creature.herder.food.Food;
 import io.github.creature.herder.food.FoodPoop;
-import io.github.creature.herder.render.ClosestObjectWithDistance;
-import io.github.creature.herder.entity.creatures.Creature;
-import io.github.creature.herder.entity.EntityState;
 import io.github.creature.herder.items.FoodBag;
+import io.github.creature.herder.render.ClosestObjectWithDistance;
 import io.github.creature.herder.render.RenderableObject;
-import io.github.creature.herder.screen.BuildingScreen;
+import io.github.creature.herder.screen.ui.UIStomach;
 import io.github.creature.herder.util.CoordUtil;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,6 +52,24 @@ public class InputHelper {
       WorldCamera.ZOOM /= 1.05f;
     }
 
+    // if clicked creature
+    if (justLeftClicked()) {
+      other.stream().filter(UIStomach.class::isInstance).forEach(RenderableObject::dispose);
+      Vector2 cameraWorldPosition =
+          CoordUtil.ScreenToWorld(
+              new Vector2(
+                  Gdx.input.getX() - Gdx.graphics.getWidth() / 2f,
+                  Gdx.graphics.getHeight() / 2f - Gdx.input.getY()));
+      Optional<ClosestObjectWithDistance> closestCreature =
+          getClosestRenderableObject(new ArrayList<>(creatures), cameraWorldPosition, true);
+
+      if (closestCreature.isPresent()
+          && closestCreature.get().distance() < 1f
+          && closestCreature.get().object() instanceof Creature creature) {
+        other.add(new UIStomach(creature));
+      }
+    }
+
     boolean walkingSideways = false;
     if (isWalkingRight()) {
       walkingSideways = true;
@@ -77,16 +94,9 @@ public class InputHelper {
 
     if (Gdx.input.isKeyPressed(Input.Keys.O)) {
       List<RenderableObject> pickable = new ArrayList<>(creatures);
-      building
-          .getPens()
-          .forEach(
-              pen -> {
-                pickable.add(pen.getDispenser());
-                pickable.add(pen.getDump());
-              });
-      pickable.addAll(building.getStores());
+      pickable.addAll(building.getAllDispensers());
       Optional<ClosestObjectWithDistance> closestRenderableObject =
-          getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord());
+          getClosestRenderableObject(pickable, player.getRenderable().getWorldCoord(), false);
       closestRenderableObject.ifPresent(InputHelper::pickUpObject);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.P) && player.getPickedUpObject() != null) {
@@ -104,13 +114,20 @@ public class InputHelper {
         building.isDispenser(foodBag.getRenderable().getWorldCoord());
     dispenser.ifPresent(
         dp -> {
-            int foodsInDump = dp.getAllocatedFoods();
-            if (!foodBag.foods.isEmpty() && foodsInDump <dp.getMaxFood()) {
-              Food food = foodBag.foods.getLast();
-              FoodPoop poop = new FoodPoop(foodBag.getRenderable().getWorldCoord(), food, dp, false, true, Optional.of(dp.getFoodWorldCoord(foodsInDump)));
-              poop.speed = 3f;
-              other.add(poop);
-              foodBag.foods.removeLast();
+          int foodsInDump = dp.getAllocatedFoods();
+          if (!foodBag.foods.isEmpty() && foodsInDump < dp.getMaxFood()) {
+            Food food = foodBag.foods.getLast();
+            FoodPoop poop =
+                new FoodPoop(
+                    foodBag.getRenderable().getWorldCoord(),
+                    food,
+                    dp,
+                    false,
+                    true,
+                    Optional.of(dp.getFoodWorldCoord(foodsInDump)));
+            poop.speed = 3f;
+            other.add(poop);
+            foodBag.foods.removeLast();
           }
           if (foodBag.foods.isEmpty()) {
             foodBag.isDisposed = true;
@@ -119,37 +136,53 @@ public class InputHelper {
         });
   }
 
-    private static void dropPickedUpCreature(Creature creature) {
+  private static void dropPickedUpCreature(Creature creature) {
     final Vector2 pickedUpCreatureWorldCoord =
         player.getPickedUpObject().getRenderable().getWorldCoord();
     final Optional<Pen> pen =
         building.isPen(
             Math.round(pickedUpCreatureWorldCoord.x), Math.round(pickedUpCreatureWorldCoord.y));
     if (pen.isPresent()) {
-        creature.putInPen(pen.get());
-        player.pickedUpObject = null;
-    }else{
-        Optional<ClosestObjectWithDistance> closestCustomer = getClosestRenderableObject(new ArrayList<>(customers), player.pickedUpObject.getRenderable().getWorldCoord());
-        closestCustomer.filter(c -> c.distance()<1f).ifPresent(customer -> {
-            if (((Customer)customer.object()).buy(creature)){
-                player.pickedUpObject = null;
-            }
-        });
+      creature.putInPen(pen.get());
+      player.pickedUpObject = null;
+    } else {
+      Optional<ClosestObjectWithDistance> closestCustomer =
+          getClosestRenderableObject(
+              new ArrayList<>(customers),
+              player.pickedUpObject.getRenderable().getWorldCoord(),
+              false);
+      closestCustomer
+          .filter(c -> c.distance() < 1f)
+          .ifPresent(
+              customer -> {
+                if (((Customer) customer.object()).buy(creature)) {
+                  player.pickedUpObject = null;
+                }
+              });
     }
-
   }
 
   private static Optional<ClosestObjectWithDistance> getClosestRenderableObject(
-      List<RenderableObject> renderables, Vector2 worldCoord) {
+      List<RenderableObject> renderables, Vector2 worldCoord, boolean useCenter) {
     if (renderables.isEmpty()) {
       return Optional.empty();
     }
     return renderables.stream()
-        .min(Comparator.comparingDouble(c -> c.getRenderable().getWorldCoord().dst(worldCoord)))
+        .min(
+            Comparator.comparingDouble(
+                c ->
+                    (useCenter
+                            ? c.getRenderable().getWorldCoord(new Vector2(.5f, .5f))
+                            : c.getRenderable().getWorldCoord())
+                        .dst(worldCoord)))
         .map(
             c ->
                 new ClosestObjectWithDistance(
-                    c, c.getRenderable().getWorldCoord().dst(worldCoord)));
+                    c,
+                    (useCenter
+                            ? c.getRenderable().getWorldCoord(new Vector2(.5f, .5f))
+                            : c.getRenderable().getWorldCoord())
+                        .dst(worldCoord)));
   }
 
   private static void pickUpObject(ClosestObjectWithDistance closestObjectWithDistance) {
@@ -163,6 +196,8 @@ public class InputHelper {
           creature.pickUp();
           player.pickedUpObject = creature;
         }
+      } else if (closestObjectWithDistance.object() instanceof TrashContainer trashContainer) {
+        trashContainer.flush();
       } else if (closestObjectWithDistance.object() instanceof FoodDispenser dispenser) {
         if (!dispenser.getFoods().isEmpty()) {
           FoodBag newBag = new FoodBag();
@@ -197,5 +232,9 @@ public class InputHelper {
     if (!creature.getState().getState().equals(EntityState.State.PICKED_UP)) {
       throw new RuntimeException();
     }
+  }
+
+  public static boolean justLeftClicked() {
+    return Gdx.input.justTouched() && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
   }
 }

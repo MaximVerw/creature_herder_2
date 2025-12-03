@@ -15,6 +15,14 @@ public enum Food {
     return TEXTURES_MAP.get(this);
   }
 
+  public double getPrice() {
+    return switch (this) {
+      case ROTTEN -> 2.;
+      case MEAT -> 6.;
+      case STONE -> 1.;
+    };
+  }
+
   private static Map<Food, Texture> createTextures() {
     return Map.of(
         ROTTEN, createTexture(ROTTEN),

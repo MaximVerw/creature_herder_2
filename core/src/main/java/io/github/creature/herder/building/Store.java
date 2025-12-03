@@ -12,15 +12,18 @@ import lombok.Getter;
 public class Store extends FoodDispenser {
   Map<Food, Double> foodMix;
 
-  public Store(
-      Map<Food, Double> foodMix, final int price, final int x, final int y, final boolean flipped) {
+  public Store(Map<Food, Double> foodMix, final int x, final int y, final boolean flipped) {
     super(x, y, flipped);
     this.foodMix = new HashMap<>(foodMix);
     tweakProbabilities(this.foodMix);
     while (foods.size() < maxFood) {
       fillFood(0);
     }
-    this.price = price;
+    this.price = (int) Math.round(calculatePrice(foodMix));
+  }
+
+  public static double calculatePrice(Map<Food, Double> foodMix) {
+    return foodMix.entrySet().stream().mapToDouble(e -> e.getValue() * e.getKey().getPrice()).sum();
   }
 
   private void fillFood(int index) {

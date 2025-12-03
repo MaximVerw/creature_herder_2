@@ -12,8 +12,8 @@ import lombok.Getter;
 public abstract class Entity extends RenderableObject {
   public static final int SPRITE_WIDTH = 16;
   public static final int SPRITE_HEIGHT = 24;
-    public float speed;
-    protected EntityState state;
+  public float speed;
+  protected EntityState state;
 
   public Entity() {
     state = new EntityState();

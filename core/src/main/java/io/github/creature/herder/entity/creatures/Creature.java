@@ -20,6 +20,8 @@ import java.util.Optional;
 
 public abstract class Creature extends Entity {
   public static final Vector2 MOUTH_ANCHOR = new Vector2(.5f, .5f);
+  public static final float GROWTH_STEPS = 100f;
+  public static final float REPRODUCE_STEPS = 20f;
   public static List<EntityState.State> IDLE_STATES =
       List.of(EntityState.State.WALKING, EntityState.State.IDLE);
   Pen pen;
@@ -27,6 +29,7 @@ public abstract class Creature extends Entity {
   public Stomach stomach;
   public int maxHealth;
   public int health;
+  public float reproduceProgress;
   public float growth;
 
   Creature(
@@ -35,9 +38,10 @@ public abstract class Creature extends Entity {
       final float digestionSpeed,
       final int health,
       final List<DigestionTrack> digestionTracks,
-      final boolean alreadyGrown) {
+      final float growth) {
     super();
-    this.growth = alreadyGrown ? 1f : 0.3f;
+    this.growth = growth;
+    this.reproduceProgress = 0f;
     this.pen = pen;
     pen.getCreatures().add(this);
     this.size = size;
@@ -82,8 +86,8 @@ public abstract class Creature extends Entity {
 
   private void processFood() {
     if (state.getState().equals(EntityState.State.IDLE) && pen != null && stomach.foodCheck()) {
-        grow();
-        if (!stomach.canEat()) {
+      grow();
+      if (!stomach.canEat()) {
         if (!stomach.food.isEmpty()) {
           Optional<Food> uselessFood = stomach.getUselessFood();
           if (uselessFood.isPresent()) {
@@ -102,44 +106,51 @@ public abstract class Creature extends Entity {
           goGetFood();
         }
         if (growth > .8f && !pen.isOverCrowded()) {
+          reproduceProgress += 1f / REPRODUCE_STEPS;
           reproduce();
         }
       }
     }
   }
 
-    private void grow() {
-        growth = Math.min(1f, growth + 0.01f);
-        stomach.updateStomachSize(size, growth);
-    }
+  private void grow() {
+    growth = Math.min(1f, growth + 1f / GROWTH_STEPS);
+    stomach.updateStomachSize(size, growth);
+  }
 
-    private void yuckEmote() {
+  private void yuckEmote() {
     BuildingScreen.other.add(new YuckEmote(renderable.getWorldCoord(MOUTH_ANCHOR)));
   }
 
   private void poop(Food poop, boolean withOffset) {
-      FoodDispenser target;
-      if (pen.getDump().getAllocatedFoods()>=pen.getDump().getMaxFood()){
-          target = pen.getDispenser();
-      }else{
-          target = pen.getDump();
-      }
+    FoodDispenser target;
+    if (pen.getDump().getAllocatedFoods() >= pen.getDump().getMaxFood()) {
+      target = pen.getDispenser();
+    } else {
+      target = pen.getDump();
+    }
     BuildingScreen.other.add(
-        new FoodPoop(renderable.getWorldCoord(MOUTH_ANCHOR), poop, target, withOffset, false, Optional.empty()));
+        new FoodPoop(
+            renderable.getWorldCoord(MOUTH_ANCHOR),
+            poop,
+            target,
+            withOffset,
+            false,
+            Optional.empty()));
   }
 
   private void reproduce() {
-    if (RANDOM.nextFloat() < 0.05f) {
-      Creature child = createCreature(getType(), pen, false);
+    if (reproduceProgress > 1f) {
+      reproduceProgress = 0f;
+      Creature child = createCreature(getType(), pen, 0f);
       child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
       creatures.add(child);
     }
   }
 
-  public static Creature createCreature(
-      CreatureType type, Pen pen, final boolean alreadyGrown) {
+  public static Creature createCreature(CreatureType type, Pen pen, final float growth) {
     return switch (type) {
-      case RAT -> new Rat(pen, alreadyGrown);
+      case RAT -> new Rat(pen, growth);
     };
   }
 
@@ -200,7 +211,16 @@ public abstract class Creature extends Entity {
   }
 
   private Vector2 getSizeVector() {
-    return new Vector2(this.size, this.size).scl(this.growth);
+    return new Vector2(this.size, this.size).scl((this.growth + .3f) / 1.3f);
+  }
+
+  public double getPrice() {
+    double cheapestTrack =
+        stomach.digestionTracks.stream()
+            .mapToDouble(dt -> dt.getRequirements().stream().mapToDouble(Food::getPrice).sum())
+            .min()
+            .orElseThrow();
+    return cheapestTrack * GROWTH_STEPS;
   }
 
   abstract CreatureType getType();

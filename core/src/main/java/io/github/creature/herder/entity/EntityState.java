@@ -1,7 +1,6 @@
 package io.github.creature.herder.entity;
 
 import com.badlogic.gdx.math.Vector2;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;

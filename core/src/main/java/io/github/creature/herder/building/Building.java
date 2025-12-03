@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.Getter;
 
 @Getter
@@ -18,6 +17,7 @@ public class Building {
   List<List<Tile>> floorTiles;
   List<Pen> pens;
   List<Store> stores;
+  TrashContainer trashContainer;
 
   public Building() {
     floorTiles = new ArrayList<>();
@@ -33,9 +33,11 @@ public class Building {
     pens.add(new Pen(6, 4, 12));
 
     stores = new ArrayList<>();
-    stores.add(new Store(Map.of(Food.STONE, 1.), 1, 2, 0, false));
-    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .6, Food.STONE, .1), 2, 4, 0, false));
-      stores.add(new Store(Map.of(Food.MEAT, .7, Food.ROTTEN, .3), 5, 6, 0, false));
+    stores.add(new Store(Map.of(Food.STONE, 1.), 4, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .6, Food.STONE, .1), 6, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .7, Food.ROTTEN, .3), 8, 0, false));
+
+    trashContainer = new TrashContainer(2, 0, false);
   }
 
   public boolean isWalkable(final int i, final int j) {
@@ -56,6 +58,7 @@ public class Building {
     for (final Store store : stores) {
       renderables.addAll(store.getRenderables());
     }
+    renderables.addAll(trashContainer.getRenderables());
     return renderables;
   }
 
@@ -64,10 +67,20 @@ public class Building {
   }
 
   public Optional<FoodDispenser> isDispenser(Vector2 worldCoord) {
-    return Stream.concat(
-            stores.stream(),
-            pens.stream().flatMap(pen -> Stream.of(pen.getDispenser(), pen.getDump())))
+    List<FoodDispenser> dispensers = getAllDispensers();
+    return dispensers.stream()
         .filter(foodDispenser -> foodDispenser.getRenderable().woordCoord.dst(worldCoord) < 1f)
         .findAny();
+  }
+
+  public List<FoodDispenser> getAllDispensers() {
+    List<FoodDispenser> dispensers = new ArrayList<>(stores);
+    pens.forEach(
+        pen -> {
+          dispensers.add(pen.getDispenser());
+          dispensers.add(pen.getDump());
+        });
+    dispensers.add(trashContainer);
+    return dispensers;
   }
 }

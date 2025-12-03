@@ -3,13 +3,8 @@ package io.github.creature.herder.food;
 import static io.github.creature.herder.food.Food.FOOD_SIZE;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.creature.herder.emotes.YuckEmote;
-import io.github.creature.herder.items.FoodBag;
 import io.github.creature.herder.render.Renderable;
 import io.github.creature.herder.render.RenderableObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class EatenFood extends RenderableObject {
   RenderableObject target;
