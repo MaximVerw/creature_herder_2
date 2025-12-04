@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Player extends Entity {
-  public static final Texture PLAYER_TEXTURE = new Texture("player_spread.png");
+  public static final Texture PLAYER_TEXTURE = new Texture("images/player_spread.png");
   static float PLAYER_Y_OFFSET = -1f;
   public RenderableObject pickedUpObject;
   private int money = 100;

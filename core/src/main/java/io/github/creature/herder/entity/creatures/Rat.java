@@ -8,7 +8,7 @@ import io.github.creature.herder.food.RotEatingDigestionTrack;
 import java.util.List;
 
 public class Rat extends Creature {
-  public static final Texture RAT_TEXTURE = new Texture("rat.png");
+  public static final Texture RAT_TEXTURE = new Texture("images/rat.png");
 
   public Rat(final Pen pen, final float growth) {
     super(

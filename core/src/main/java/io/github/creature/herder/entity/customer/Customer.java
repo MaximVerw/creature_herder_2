@@ -7,6 +7,7 @@ import io.github.creature.herder.entity.Direction;
 import io.github.creature.herder.entity.Entity;
 import io.github.creature.herder.entity.EntityState;
 import io.github.creature.herder.entity.creatures.Creature;
+import io.github.creature.herder.entity.creatures.Egg;
 import io.github.creature.herder.screen.BuildingScreen;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Customer extends Entity {
-  public static final Texture CUSTOMER_TEXTURE = new Texture("player_spread.png");
-  public static final float PRICE_PREMIUM = .2f;
+  public static final Texture CUSTOMER_TEXTURE = new Texture("images/player_spread.png");
   private Direction direction;
   List<Vector2> path;
   int slot;
@@ -39,14 +39,12 @@ public class Customer extends Entity {
   }
 
   public boolean buy(Creature creature) {
-    if (path.isEmpty() && creature.growth > .8f) {
+    if (path.isEmpty()) {
       path.addAll(generatePath().reversed());
       purchased = true;
       creature.isDisposed = true;
       double totalPrice =
-          creature.growth
-              * creature.getPrice()
-              * (1. + ((float) creature.health / creature.maxHealth) * PRICE_PREMIUM);
+          creature.getPrice();
       BuildingScreen.player.setMoney((int) (BuildingScreen.player.getMoney() + totalPrice));
       return true;
     } else {

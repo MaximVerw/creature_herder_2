@@ -1,6 +1,7 @@
 package io.github.creature.herder.screen.ui;
 
 import static io.github.creature.herder.screen.BuildingScreen.other;
+import static io.github.creature.herder.screen.ui.UIHelper.getPanelRenderable;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,13 +18,13 @@ import java.util.List;
 
 public class UIStomach extends RenderableObject {
   private static final Texture STOMACH_TEXTURE =
-      new Texture(Gdx.files.getLocalStoragePath() + "stomach.png");
+      new Texture(Gdx.files.getLocalStoragePath() + "images/stomach.png");
   public static final int WIDTH_PIXELS = 30;
   public static final int HEIGHT_PIXELS = 24;
   public static final List<Integer> STOMACH_SIZE_BY_PIXEL_PER_FOOD = createStomachSizes();
-  public static final float STOMACH_SIZE_STEP = .2f;
+  public static final float STOMACH_SIZE_STEP = 1.001f;
 
-  private final Creature creature;
+  public final Creature creature;
   private final List<RenderableObject> uiFoods;
 
   public UIStomach(Creature creature) {
@@ -31,7 +32,7 @@ public class UIStomach extends RenderableObject {
     this.uiFoods = new ArrayList<>();
     renderable =
         new Renderable(
-            STOMACH_TEXTURE, getWorldCoord(), getSize(creature.stomach), new Vector2(.5f, 0f), 10);
+            STOMACH_TEXTURE, getWorldCoord(), getSize(creature.stomach), new Vector2(.5f, .5f), 10);
   }
 
   @Override
@@ -46,7 +47,7 @@ public class UIStomach extends RenderableObject {
   }
 
   private static Vector2 getWorldCoord() {
-    return UIHelper.getPanelRenderable().getWorldCoord(new Vector2(.5f, 0f));
+    return getPanelRenderable().getWorldCoord(new Vector2(.5f, .25f));
   }
 
   public void updateUiFoods() {
@@ -64,7 +65,7 @@ public class UIStomach extends RenderableObject {
       Texture foodTexture = food.get(i).getTexture();
 
       float desiredScreenWidth = sizePerPixel * pixelsPerFood;
-      ;
+
       Renderable renderableFood =
           new Renderable(
               foodTexture, relativePosition, new Vector2(1f, 1f), new Vector2(.5f, .5f), 11);
@@ -77,17 +78,21 @@ public class UIStomach extends RenderableObject {
   }
 
   private float getPixelsPerFood() {
-    for (int i = STOMACH_SIZE_BY_PIXEL_PER_FOOD.size() - 1; i > 0; i--) {
-      if (STOMACH_SIZE_BY_PIXEL_PER_FOOD.get(i) > creature.stomach.getStomachSize()) {
-        return i * STOMACH_SIZE_STEP;
+    float stomachSize = 1f;
+    for (Integer amount : STOMACH_SIZE_BY_PIXEL_PER_FOOD) {
+
+      if (amount < creature.stomach.getStomachSize()) {
+        return stomachSize / STOMACH_SIZE_STEP;
       }
+      stomachSize *= STOMACH_SIZE_STEP;
     }
+
     throw new RuntimeException();
   }
 
   private static List<Integer> createStomachSizes() {
-    List<Integer> stomachSizes = new ArrayList<>(List.of(0));
-    for (float i = 1f; i < 10f; i += STOMACH_SIZE_STEP) {
+    List<Integer> stomachSizes = new ArrayList<>();
+    for (float i = 1f; i < 10f; i *= STOMACH_SIZE_STEP) {
       stomachSizes.add(getPositions(1f, i).size());
     }
     return stomachSizes;
@@ -95,12 +100,13 @@ public class UIStomach extends RenderableObject {
 
   private static List<Vector2> getPositions(float sizePerPixel, float foodWidthInStomachPixels) {
     List<Vector2> positions = new ArrayList<>();
+
     float width = sizePerPixel * foodWidthInStomachPixels;
     // do not go all the way to the stomach end to avoid the straight edges
     for (float x = 0; x < sizePerPixel * WIDTH_PIXELS / 2f; x += width) {
       float minusY = onLowerEllipseCurve(x, sizePerPixel);
       float offsetY = (onLowerEllipseCurve(x + width / 2f, sizePerPixel) - minusY) / 2f;
-      for (float y = .5f * width + offsetY; y < -2f * minusY - offsetY; y += width) {
+      for (float y = .5f * width + offsetY; y < -2f * minusY - offsetY - .5f * width; y += width) {
         positions.add(new Vector2(x, minusY + y));
         if (x != 0) {
           positions.add(new Vector2(-x, minusY + y));
@@ -133,7 +139,9 @@ public class UIStomach extends RenderableObject {
     float size =
         (float)
             Math.clamp(
-                0.83 * Math.log10(Math.max(1, stomach.getStomachSize() - 4) / 2f) + 0.178, .4f, 2f);
+                0.83 * Math.log10(Math.max(1, stomach.getStomachSize() - 4) / 2f) + 0.178,
+                .4f,
+                .7f);
     return new Vector2(size, size);
   }
 }

@@ -30,7 +30,7 @@ public enum Food {
         STONE, createTexture(STONE));
   }
 
-  private static Texture createTexture(Food rotten) {
-    return new Texture(rotten.name() + ".png");
+  private static Texture createTexture(Food food) {
+    return new Texture("images/" + food.name() + ".png");
   }
 }

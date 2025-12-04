@@ -1,5 +1,7 @@
 package io.github.creature.herder.screen;
 
+import static io.github.creature.herder.entity.creatures.Creature.createCreature;
+
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import io.github.creature.herder.building.Building;
 import io.github.creature.herder.camera.WorldCamera;
 import io.github.creature.herder.entity.creatures.Creature;
+import io.github.creature.herder.entity.creatures.CreatureType;
 import io.github.creature.herder.entity.creatures.Rat;
 import io.github.creature.herder.entity.customer.Customer;
 import io.github.creature.herder.entity.player.Player;
@@ -34,15 +37,11 @@ public class BuildingScreen implements Screen {
     WorldCamera.resetCamera();
     spriteBatch = new SpriteBatch();
 
-    building
-        .getPens()
-        .forEach(
-            pen -> {
-              for (int i = 0; i < 3; i++) {
-                final Rat rat = new Rat(pen, i * .4f);
-                creatures.add(rat);
-              }
-            });
+    for (int i = 0; i < 2; i++) {
+      final Rat rat = new Rat(building.getPens().getFirst(), i * .4f);
+      creatures.add(rat);
+    }
+    creatures.add(createCreature(CreatureType.STONER, building.getPens().get(1), .8f));
   }
 
   @Override

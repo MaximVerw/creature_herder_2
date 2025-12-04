@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class Creature extends Entity {
+    public static final float PRICE_PREMIUM = .2f;
   public static final Vector2 MOUTH_ANCHOR = new Vector2(.5f, .5f);
   public static final float GROWTH_STEPS = 100f;
   public static final float REPRODUCE_STEPS = 20f;
@@ -48,7 +49,8 @@ public abstract class Creature extends Entity {
     this.renderable.size = getSizeVector();
     this.renderable.woordCoord = pen.getWorldCoord().cpy();
     this.speed = this.getSpeed() / this.speed;
-    this.stomach = new Stomach(growth, size, digestionSpeed, digestionTracks);
+    this.stomach =
+        new Stomach(growth, size * getStomachSizeFactor(), digestionSpeed, digestionTracks);
     this.health = health;
     this.maxHealth = this.health;
     goGetFood();
@@ -75,8 +77,7 @@ public abstract class Creature extends Entity {
         renderable.woordCoord = renderable.getWorldCoord().add(clampedDelta);
       }
     } else if (state.getState().equals(EntityState.State.PICKED_UP)) {
-      state.setDirection(player.getState().getDirection());
-      renderable.woordCoord = computePickedUpWorldCoord();
+        pickedUpUpdate();
     } else if (state.getState().equals(EntityState.State.DEAD)) {
       renderable.size = renderable.size.scl(.95f);
       disposeCheck();
@@ -84,7 +85,12 @@ public abstract class Creature extends Entity {
     checkHealth();
   }
 
-  private void processFood() {
+    protected void pickedUpUpdate() {
+        state.setDirection(player.getState().getDirection());
+        renderable.woordCoord = computePickedUpWorldCoord();
+    }
+
+    private void processFood() {
     if (state.getState().equals(EntityState.State.IDLE) && pen != null && stomach.foodCheck()) {
       grow();
       if (!stomach.canEat()) {
@@ -106,7 +112,7 @@ public abstract class Creature extends Entity {
           goGetFood();
         }
         if (growth > .8f && !pen.isOverCrowded()) {
-          reproduceProgress += 1f / REPRODUCE_STEPS;
+          reproduceProgress =  Math.min(1f, reproduceProgress + 1f / REPRODUCE_STEPS);
           reproduce();
         }
       }
@@ -115,7 +121,11 @@ public abstract class Creature extends Entity {
 
   private void grow() {
     growth = Math.min(1f, growth + 1f / GROWTH_STEPS);
-    stomach.updateStomachSize(size, growth);
+    stomach.updateStomachSize(size * getStomachSizeFactor(), growth);
+  }
+
+  protected float getStomachSizeFactor() {
+    return 1f;
   }
 
   private void yuckEmote() {
@@ -139,18 +149,25 @@ public abstract class Creature extends Entity {
             Optional.empty()));
   }
 
-  private void reproduce() {
-    if (reproduceProgress > 1f) {
-      reproduceProgress = 0f;
-      Creature child = createCreature(getType(), pen, 0f);
-      child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
-      creatures.add(child);
+  protected void reproduce() {
+    if (reproduceProgress >= 1f) {
+        if (reproduceRequirement()){
+            reproduceProgress = 0f;
+            Creature child = createCreature(getType(), pen, 0f);
+            child.getRenderable().woordCoord = renderable.getWorldCoord().cpy();
+            creatures.add(child);
+        }
     }
   }
 
-  public static Creature createCreature(CreatureType type, Pen pen, final float growth) {
+    protected boolean reproduceRequirement() {
+        return true;
+    }
+
+    public static Creature createCreature(CreatureType type, Pen pen, final float growth) {
     return switch (type) {
       case RAT -> new Rat(pen, growth);
+      case STONER -> growth == 0f?new Egg(pen, type):new Stoner(pen, growth);
     };
   }
 
@@ -181,7 +198,7 @@ public abstract class Creature extends Entity {
   }
 
   private void checkHealth() {
-    if (this.health < 0 && !this.state.getState().equals(EntityState.State.PICKED_UP)) {
+    if (this.health <= 0 && !this.state.getState().equals(EntityState.State.PICKED_UP)) {
       removeFromPen();
       this.state.die();
     }
@@ -220,7 +237,11 @@ public abstract class Creature extends Entity {
             .mapToDouble(dt -> dt.getRequirements().stream().mapToDouble(Food::getPrice).sum())
             .min()
             .orElseThrow();
-    return cheapestTrack * GROWTH_STEPS;
+    double basePrice = cheapestTrack*GROWTH_STEPS;
+
+    return growth
+          * basePrice
+          * (1. + ((float) health / maxHealth) * PRICE_PREMIUM);
   }
 
   abstract CreatureType getType();

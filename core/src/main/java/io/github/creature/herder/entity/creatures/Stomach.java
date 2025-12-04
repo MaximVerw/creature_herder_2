@@ -25,14 +25,13 @@ public class Stomach {
 
   Stomach(
       final float growth,
-      final float size,
+      final float stomachSize,
       final float digestionSpeed,
       final List<DigestionTrack> digestionTracks) {
-    super();
-    updateStomachSize(size, growth);
     this.digestionSpeed = digestionSpeed;
     this.digestionTracks = digestionTracks;
     this.food = new ArrayList<>();
+    updateStomachSize(stomachSize, growth);
   }
 
   public void updateStomachSize(float creatureSize, float creatureGrowth) {

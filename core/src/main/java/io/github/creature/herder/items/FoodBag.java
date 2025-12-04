@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FoodBag extends RenderableObject {
-  public static final Texture FOOD_BAG_TEXTURE = new Texture("llama.png");
+  public static final Texture FOOD_BAG_TEXTURE = new Texture("images/llama.png");
   public static int MAX_FOODS = 60;
   public List<Food> foods = new ArrayList<>();
 

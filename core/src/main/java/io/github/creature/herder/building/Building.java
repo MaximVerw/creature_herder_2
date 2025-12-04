@@ -36,6 +36,7 @@ public class Building {
     stores.add(new Store(Map.of(Food.STONE, 1.), 4, 0, false));
     stores.add(new Store(Map.of(Food.MEAT, .3, Food.ROTTEN, .6, Food.STONE, .1), 6, 0, false));
     stores.add(new Store(Map.of(Food.MEAT, .7, Food.ROTTEN, .3), 8, 0, false));
+    stores.add(new Store(Map.of(Food.MEAT, .9, Food.STONE, .1), 10, 0, false));
 
     trashContainer = new TrashContainer(2, 0, false);
   }

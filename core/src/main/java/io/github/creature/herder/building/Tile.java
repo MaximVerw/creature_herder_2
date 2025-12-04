@@ -29,9 +29,9 @@ public class Tile extends RenderableObject {
 
   private static String getPathForType(final TileType type) {
     if (type.equals(TileType.Background)) {
-      return "floor.png";
+      return "images/floor.png";
     } else if (type.equals(TileType.Pen)) {
-      return "grass.png";
+      return "images/grass.png";
     } else {
       throw new RuntimeException();
     }

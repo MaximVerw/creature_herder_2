@@ -15,7 +15,7 @@ import lombok.Getter;
 
 @Getter
 public class FoodDispenser extends RenderableObject {
-  public static final Texture FOOD_DISPENSER_TEXTURE = new Texture("foodDispenser.png");
+  public static final Texture FOOD_DISPENSER_TEXTURE = new Texture("images/foodDispenser.png");
   int maxFood;
   List<Food> foods;
   List<Vector2> foodWorldCoords;
