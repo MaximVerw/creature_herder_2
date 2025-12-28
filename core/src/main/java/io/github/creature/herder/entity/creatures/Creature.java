@@ -167,7 +167,7 @@ public abstract class Creature extends Entity {
     public static Creature createCreature(CreatureType type, Pen pen, final float growth) {
     return switch (type) {
       case RAT -> new Rat(pen, growth);
-      case STONER -> growth == 0f?new Egg(pen, type):new Stoner(pen, growth);
+      case STONER -> growth == 0f?new Egg(pen, type, Food.STONE):new Stoner(pen, growth);
     };
   }
 
@@ -231,7 +231,7 @@ public abstract class Creature extends Entity {
     return new Vector2(this.size, this.size).scl((this.growth + .3f) / 1.3f);
   }
 
-  public double getPrice() {
+  public int getPrice() {
     double cheapestTrack =
         stomach.digestionTracks.stream()
             .mapToDouble(dt -> dt.getRequirements().stream().mapToDouble(Food::getPrice).sum())
@@ -239,9 +239,9 @@ public abstract class Creature extends Entity {
             .orElseThrow();
     double basePrice = cheapestTrack*GROWTH_STEPS;
 
-    return growth
-          * basePrice
-          * (1. + ((float) health / maxHealth) * PRICE_PREMIUM);
+    return (int) (growth
+              * basePrice
+              * (1. + ((float) health / maxHealth) * PRICE_PREMIUM));
   }
 
   abstract CreatureType getType();

@@ -162,7 +162,7 @@ public class InputHelper {
     }
   }
 
-  private static Optional<ClosestObjectWithDistance> getClosestRenderableObject(
+  public static Optional<ClosestObjectWithDistance> getClosestRenderableObject(
       List<RenderableObject> renderables, Vector2 worldCoord, boolean useCenter) {
     if (renderables.isEmpty()) {
       return Optional.empty();

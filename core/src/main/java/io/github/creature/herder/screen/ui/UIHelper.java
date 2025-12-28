@@ -1,23 +1,39 @@
 package io.github.creature.herder.screen.ui;
 
+import static io.github.creature.herder.input.InputHelper.getClosestRenderableObject;
 import static io.github.creature.herder.screen.BuildingScreen.*;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import io.github.creature.herder.building.Store;
 import io.github.creature.herder.entity.creatures.Creature;
+import io.github.creature.herder.entity.customer.Customer;
+import io.github.creature.herder.render.ClosestObjectWithDistance;
 import io.github.creature.herder.render.Renderable;
+import io.github.creature.herder.render.RenderableObject;
 import io.github.creature.herder.util.ColorTextureHelper;
 import io.github.creature.herder.util.ColorType;
 import io.github.creature.herder.util.CoordUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class UIHelper {
-  private static final Texture NUMBERS_TEXTURE =
+    private static final Texture NUMBERS_TEXTURE =
       new Texture(Gdx.files.getLocalStoragePath() + "images/numbers.png");
   private static final Texture HEART_TEXTURE =
       new Texture(Gdx.files.getLocalStoragePath() + "images/heart.png");
@@ -26,8 +42,9 @@ public class UIHelper {
   private static final List<TextureRegion> numbers = getNumberTextures();
   private static final int UI_SCALE_FACTOR = 3;
   public static final float PANEL_SIZE = 1f;
+    public static final Texture PANEL_COLOR_TEXTURE = ColorTextureHelper.getTexture(.2f, ColorType.BROWN);
 
-  private UIHelper() {}
+    private UIHelper() {}
 
   private static List<TextureRegion> getNumberTextures() {
     final List<TextureRegion> numberTextures = new ArrayList<>();
@@ -40,9 +57,62 @@ public class UIHelper {
   public static void drawUIElements(final SpriteBatch spriteBatch) {
     drawMoney(spriteBatch);
     getUiStomachOpt().ifPresent(uiStomach -> drawCreatureStats(uiStomach.creature, spriteBatch));
+    drawPopUp(spriteBatch);
   }
 
-  public static List<Renderable> drawUIRenderables() {
+  private static void drawPopUp(SpriteBatch spriteBatch){
+      ArrayList<RenderableObject> popupable = new ArrayList<>(building.getStores());
+      popupable.addAll(customers);
+      Optional<ClosestObjectWithDistance> closestPopUp =
+          getClosestRenderableObject(
+              popupable,
+              player.getRenderable().getWorldCoord(),
+              false);
+
+      closestPopUp.filter(p -> p.distance()<1f).map(ClosestObjectWithDistance::object).ifPresent(closest -> {
+          if (closest instanceof Customer customer){
+              String customerText = customer.getText(player.pickedUpObject);
+              drawPopUpText(customerText, customer.getRenderable().getWorldCoord(new Vector2(.5f, 1f)), spriteBatch);
+          } else if (closest instanceof Store store) {
+              drawPopUpText("Price: "+store.getPrice(), store.getRenderable().getWorldCoord(new Vector2(.3f,.6f)), spriteBatch);
+          }
+      });
+  }
+
+    private static void drawPopUpText(String text, Vector2 worldCoord, SpriteBatch spriteBatch) {
+        Table table = new Table();
+        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
+        style.font = new BitmapFont();
+        style.fontColor = Color.BLACK;
+        style.background = new TextureRegionDrawable(PANEL_COLOR_TEXTURE);
+        Vector2 screenCoord = CoordUtil.WorldToScreen(worldCoord);
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(style.font, text);
+        table.setPosition(screenCoord.x, screenCoord.y);
+        TextField textField = new TextField(text, style);
+        textField.setAlignment(1);
+
+        //table.add(textField).width(glyphLayout.width).height(glyphLayout.height).expand();
+        Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.BLACK);
+        labelStyle.background = new TextureRegionDrawable(PANEL_COLOR_TEXTURE);
+        Label label = new Label(text, labelStyle);
+        label.setWrap(true);
+        table.add(label).width(glyphLayout.width).expand();
+        table.draw(spriteBatch, 1f);
+    }
+
+    private static float getSize(String text, TextField.TextFieldStyle style, boolean width) {
+        String[] split = text.split("\\n");
+        if(width){
+            int num = Arrays.stream(split).mapToInt(String::length).max().orElse(0);
+            return style.font.getXHeight()* num + style.font.getSpaceXadvance()*(num-1);
+        }else{
+            return style.font.getLineHeight()*split.length;
+        }
+    }
+
+
+    public static List<Renderable> drawUIRenderables() {
     return getCreaturePanelRenderables();
   }
 
@@ -59,9 +129,8 @@ public class UIHelper {
   }
 
   public static Renderable getPanelRenderable() {
-    Texture texture = ColorTextureHelper.getTexture(.2f, ColorType.BROWN);
     return new Renderable(
-        texture,
+        PANEL_COLOR_TEXTURE,
         CoordUtil.ScreenToWorld(
             new Vector2(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f).sub(50, 50)),
         new Vector2(PANEL_SIZE, PANEL_SIZE * 1.2f),

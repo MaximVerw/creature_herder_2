@@ -30,11 +30,6 @@ public class Stoner extends Creature {
     }
 
     @Override
-    public double getPrice() {
-        return super.getPrice()/2.;
-    }
-
-    @Override
     protected boolean reproduceRequirement() {
       if (stomach.food.stream().filter(Food.STONE::equals).count()>=5){
           for (int i = 0; i < 5; i++) {

@@ -8,6 +8,7 @@ import io.github.creature.herder.entity.Entity;
 import io.github.creature.herder.entity.EntityState;
 import io.github.creature.herder.entity.creatures.Creature;
 import io.github.creature.herder.entity.creatures.Egg;
+import io.github.creature.herder.render.RenderableObject;
 import io.github.creature.herder.screen.BuildingScreen;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,4 +104,12 @@ public class Customer extends Entity {
     }
     return 2;
   }
+
+    public String getText(RenderableObject object) {
+        String text = "Hello, I am a customer :^D";
+        if (object!= null && object instanceof Creature creature){
+            text += "\nI will buy that thing for %s :^o".formatted(creature.getPrice());
+        }
+        return text;
+    }
 }
